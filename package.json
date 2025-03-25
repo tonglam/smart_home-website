@@ -49,6 +49,7 @@
     "embla-carousel-react": "^8.5.2",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.484.0",
+    "mqtt": "^5.10.4",
     "next": "^15.2.4",
     "next-themes": "^0.3.0",
     "postcss": "^8.5.3",
@@ -65,12 +66,15 @@
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "~5.3.3",
+    "uuid": "^11.1.0",
     "vaul": "^0.9.9",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250321.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20.11.0",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "cssnano": "^7.0.6",
