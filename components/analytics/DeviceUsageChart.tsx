@@ -1,22 +1,49 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { deviceModeUsageData } from "@/lib/mockChartData";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 interface DeviceUsageChartProps {
   className?: string;
 }
 
 export function DeviceUsageChart({ className }: DeviceUsageChartProps) {
-  const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+  const COLORS = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+  ];
 
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-base font-medium">Device Mode Usage</CardTitle>
+          <CardTitle className="text-base font-medium">
+            Device Mode Usage
+          </CardTitle>
           <CardDescription>
             Which automation modes are used most frequently
           </CardDescription>
@@ -47,22 +74,23 @@ export function DeviceUsageChart({ className }: DeviceUsageChartProps) {
                 innerRadius={50}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
               >
                 {deviceModeUsageData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
-              <Tooltip 
-                formatter={(value, name, props) => [`${value}%`, props.payload.name]}
-              />
-              <Legend 
-                layout="horizontal" 
-                verticalAlign="bottom" 
+              <Tooltip formatter={(value: number) => [`${value}%`, "Usage"]} />
+              <Legend
+                layout="horizontal"
+                verticalAlign="bottom"
                 align="center"
-                wrapperStyle={{ 
+                wrapperStyle={{
                   paddingTop: "20px",
-                  fontSize: "12px"
+                  fontSize: "12px",
                 }}
               />
             </PieChart>

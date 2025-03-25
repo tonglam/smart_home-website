@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Smart home logo -->
+  <rect width="512" height="512" fill="white"/>
+  
+  <!-- Outer circle representing connectivity -->
+  <circle cx="256" cy="256" r="200" stroke="#3B82F6" stroke-width="20" stroke-dasharray="15 15" />
+  
+  <!-- Inner hexagon representing smart hub -->
+  <path d="M345 256L301 342H211L167 256L211 170H301L345 256Z" fill="#EBF5FF" stroke="#3B82F6" stroke-width="12"/>
+  
+  <!-- Connected devices dots -->
+  <circle cx="256" cy="170" r="25" fill="#3B82F6"/>
+  <circle cx="345" cy="256" r="25" fill="#3B82F6"/>
+  <circle cx="301" cy="342" r="25" fill="#3B82F6"/>
+  <circle cx="211" cy="342" r="25" fill="#3B82F6"/>
+  <circle cx="167" cy="256" r="25" fill="#3B82F6"/>
+  <circle cx="211" cy="170" r="25" fill="#3B82F6"/>
+  
+  <!-- Center dot representing the central control -->
+  <circle cx="256" cy="256" r="40" fill="#3B82F6"/>
+</svg> 

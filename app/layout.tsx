@@ -13,6 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Smart Home System",
   description: "Monitor and control your smart home devices",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: { url: "/logo.svg", type: "image/svg+xml" },
+  },
 };
 
 export default function RootLayout({
@@ -22,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider
-      afterSignInUrl="/dashboard"
+      signInFallbackRedirectUrl="/"
       signInUrl="/signin"
       signUpUrl="/signup"
     >

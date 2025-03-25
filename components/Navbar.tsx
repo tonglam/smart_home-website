@@ -7,8 +7,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Github, HelpCircle, Home, HomeIcon, LogIn } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { FaGithub } from "react-icons/fa";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { IoHomeOutline, IoLogInOutline } from "react-icons/io5";
 
 interface NavbarProps {
   isSignedIn: boolean;
@@ -31,11 +34,23 @@ export function Navbar({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
-              <div className="p-1.5 bg-primary/10 rounded-md hidden sm:flex">
-                <HomeIcon className="h-5 w-5 text-primary" />
+              <div className="hidden sm:block">
+                <Image
+                  src="/logo.svg"
+                  alt="Smart Home Logo"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                />
               </div>
-              <div className="p-1.5 bg-primary/10 rounded-full sm:hidden">
-                <HomeIcon className="h-4 w-4 text-primary" />
+              <div className="sm:hidden">
+                <Image
+                  src="/logo.svg"
+                  alt="Smart Home Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6"
+                />
               </div>
               <span className="text-lg font-semibold">Smart Home</span>
             </Link>
@@ -51,7 +66,7 @@ export function Navbar({
                   onClick={onOpenConnectHome}
                   disabled={!isSignedIn}
                 >
-                  <Home className="h-4 w-4" />
+                  <IoHomeOutline className="h-5 w-5" />
                   <span className="hidden sm:inline">
                     {isHomeConnected
                       ? "Connected"
@@ -88,7 +103,7 @@ export function Navbar({
                     )
                   }
                 >
-                  <Github className="h-5 w-5" />
+                  <FaGithub className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -104,7 +119,7 @@ export function Navbar({
                     size="icon"
                     className="h-10 w-10 rounded-full transition-colors hover:bg-muted"
                   >
-                    <HelpCircle className="h-5 w-5" />
+                    <IoMdHelpCircleOutline className="h-5 w-5" />
                   </Button>
                 </Link>
               </TooltipTrigger>
@@ -117,7 +132,7 @@ export function Navbar({
               <ClerkUserAdapter onSignOut={onSignOut} />
             ) : (
               <Button variant="default" size="sm" onClick={onSignIn}>
-                <LogIn className="mr-2 h-4 w-4" />
+                <IoLogInOutline className="mr-2 h-5 w-5" />
                 <span className="hidden sm:inline">Sign In</span>
               </Button>
             )}

@@ -1,18 +1,39 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, TooltipProps } from "recharts";
-import { CalendarIcon, Zap } from "lucide-react";
 import { energyConsumptionData, hourlyEnergyData } from "@/lib/mockChartData";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Zap } from "lucide-react";
+import {
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface EnergyConsumptionChartProps {
   className?: string;
 }
 
-export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProps) {
+export function EnergyConsumptionChart({
+  className,
+}: EnergyConsumptionChartProps) {
   const formatCurrency = (value: number) => {
     return `$${value.toFixed(2)}`;
   };
@@ -21,9 +42,11 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-base font-medium">Energy Consumption</CardTitle>
+          <CardTitle className="text-base font-medium">
+            Energy Consumption
+          </CardTitle>
           <CardDescription>
-            Track your smart home's energy usage and costs
+            Track your smart home&apos;s energy usage and costs
           </CardDescription>
         </div>
         <div className="flex items-center space-x-2">
@@ -53,13 +76,13 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
                   data={energyConsumptionData}
                   margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                 >
-                  <XAxis 
-                    dataKey="day" 
-                    tick={{ fontSize: 12 }} 
+                  <XAxis
+                    dataKey="day"
+                    tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
+                  <YAxis
                     yAxisId="left"
                     tickFormatter={(value) => `${value} kWh`}
                     tick={{ fontSize: 12 }}
@@ -67,7 +90,7 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
                     axisLine={false}
                     width={70}
                   />
-                  <YAxis 
+                  <YAxis
                     yAxisId="right"
                     orientation="right"
                     tickFormatter={formatCurrency}
@@ -76,10 +99,12 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
                     axisLine={false}
                     width={50}
                   />
-                  <Tooltip 
-                    formatter={(value, name) => {
-                      if (name === "consumption") return [`${value} kWh`, "Energy Used"];
-                      if (name === "cost") return [formatCurrency(value as number), "Cost"];
+                  <Tooltip
+                    formatter={(value: number, name: string) => {
+                      if (name === "consumption")
+                        return [`${value} kWh`, "Energy Used"];
+                      if (name === "cost")
+                        return [formatCurrency(value), "Cost"];
                       return [value, name];
                     }}
                   />
@@ -106,7 +131,9 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
             <div className="grid grid-cols-2 gap-4">
               <Card className="p-3 border border-border/50 bg-card/50">
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Total Energy</span>
+                  <span className="text-xs text-muted-foreground">
+                    Total Energy
+                  </span>
                   <div className="flex items-center gap-1">
                     <Zap className="h-4 w-4 text-chart-1" />
                     <span className="text-lg font-semibold">43.8 kWh</span>
@@ -115,13 +142,18 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
               </Card>
               <Card className="p-3 border border-border/50 bg-card/50">
                 <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground">Estimated Cost</span>
+                  <span className="text-xs text-muted-foreground">
+                    Estimated Cost
+                  </span>
                   <div className="flex items-center gap-1">
                     <span className="text-lg font-semibold">$13.14</span>
                   </div>
                 </div>
               </Card>
             </div>
+            <p className="text-sm text-muted-foreground">
+              You&apos;ve saved 12% compared to last month
+            </p>
           </TabsContent>
           <TabsContent value="daily" className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -129,21 +161,21 @@ export function EnergyConsumptionChart({ className }: EnergyConsumptionChartProp
                 data={hourlyEnergyData}
                 margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
               >
-                <XAxis 
-                  dataKey="hour" 
-                  tick={{ fontSize: 12 }} 
+                <XAxis
+                  dataKey="hour"
+                  tick={{ fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis 
+                <YAxis
                   tickFormatter={(value) => `${value} kWh`}
                   tick={{ fontSize: 12 }}
                   tickLine={false}
                   axisLine={false}
                   width={70}
                 />
-                <Tooltip 
-                  formatter={(value) => [`${value} kWh`, "Energy Used"]}
+                <Tooltip
+                  formatter={(value: number) => [`${value} kWh`, "Energy Used"]}
                 />
                 <Line
                   type="monotone"

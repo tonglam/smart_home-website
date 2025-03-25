@@ -1,13 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -15,24 +9,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
-import { AlertCircle, CheckCircle2, HelpCircle, Phone, Mail } from 'lucide-react';
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
 
 const formSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
+  fullName: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
   phone: z.string().optional(),
-  subject: z.string().min(5, 'Subject must be at least 5 characters'),
-  priority: z.enum(['low', 'medium', 'high']),
-  description: z.string().min(20, 'Please provide more details (minimum 20 characters)'),
+  subject: z.string().min(5, "Subject must be at least 5 characters"),
+  priority: z.enum(["low", "medium", "high"]),
+  description: z
+    .string()
+    .min(20, "Please provide more details (minimum 20 characters)"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -48,23 +50,23 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      priority: 'medium',
+      priority: "medium",
     },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Your report has been submitted successfully', {
-        description: "We'll get back to you within 24-48 hours.",
+      // Log form data and simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      toast.success("Your report has been submitted successfully", {
+        description: "We&apos;ll get back to you within 24-48 hours.",
       });
       form.reset();
       onSubmitSuccess?.();
-    } catch (error) {
-      toast.error('Failed to submit report', {
-        description: 'Please try again or contact support directly.',
+    } catch {
+      toast.error("Failed to submit report", {
+        description: "Please try again or contact support directly.",
       });
     } finally {
       setIsSubmitting(false);
@@ -72,12 +74,13 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
   };
 
   return (
-    <Card className={`p-6 ${className || ''}`}>
+    <Card className={`p-6 ${className || ""}`}>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold">Report an Issue</h2>
           <p className="text-muted-foreground mt-2">
-            Fill out the form below and we'll get back to you within 24-48 hours.
+            Fill out the form below and we&apos;ll get back to you within 24-48
+            hours.
           </p>
         </div>
 
@@ -105,7 +108,11 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
                   <FormItem>
                     <FormLabel>Email Address *</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="john@example.com" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="john@example.com"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -121,7 +128,11 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
                   <FormItem>
                     <FormLabel>Phone Number (Optional)</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="+1 (555) 000-0000" {...field} />
+                      <Input
+                        type="tel"
+                        placeholder="+1 (555) 000-0000"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -134,7 +145,10 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority Level *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select priority" />
@@ -159,7 +173,10 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
                 <FormItem>
                   <FormLabel>Subject *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Brief description of the issue" {...field} />
+                    <Input
+                      placeholder="Brief description of the issue"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,7 +203,7 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
 
             <div className="flex flex-col gap-4">
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Sending Report...' : 'Send Report'}
+                {isSubmitting ? "Sending Report..." : "Send Report"}
               </Button>
 
               <div className="text-sm text-muted-foreground">
