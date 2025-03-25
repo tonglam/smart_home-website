@@ -1,0 +1,57 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Core Principles
+- **Keep It Simple:** Use a functional approach—no OOP patterns.
+- **Functional Components Only:** Write all UI elements as functional React components.
+- **Free Quota Compliance:** Ensure API calls, database operations, and MQTT usage stay within Cloudflare’s free tier limits.
+- When you start the app, you should check is port 3000 us occupiedl if so, kill it first.
+
+## Tech Stack
+- **Frontend:** Next.js (App Router) + Tailwind CSS + ShadCN/UI for a modern, fast UI.
+- **Database:** Cloudflare D1 for data persistence.
+- **Messaging:** MQTT for real-time communication (publish & consume).
+- **API:** Next.js Server Actions and API routes (`app/api/`).
+
+## Component & Code Structure
+- **Component Organization:**
+  - **UI Components:** Reusable elements in `components/ui/`.
+  - **Feature Components:** Self-contained components in `components/`.
+  - **Server Components:** Fetch data server-side where applicable.
+  - **Client Components:** For interactive UI elements only.
+  - **Hooks:** Store reusable logic (e.g., `useMqtt`, `useDb`) in `hooks/`.
+  
+- **API Routes (App Router):**
+  - Place API handlers inside `app/api/<route>/route.js`.
+  - Use function-based handlers for request processing.
+  - Keep API responses lightweight and efficient.
+
+## State & Data Handling
+- **Database Operations:** 
+  - Use lightweight functions for D1 queries (`lib/db.util.ts`).
+  - Optimize queries to minimize Cloudflare free-tier usage.
+
+- **MQTT Messaging:** 
+  - Implement functions for publishing and consuming MQTT messages (`lib/mqtt.util.ts`).
+  - Keep messages efficient to avoid excessive bandwidth usage.
+
+- **API Calls:** 
+  - Define API handlers in `app/api/`.
+  - Use **Server Actions** for database interactions.
+  - Fetch client-side data with `useEffect` or `useSWR` when necessary.
+
+## Configuration & Environment
+- **Environment Variables:** Store sensitive settings (DB credentials, MQTT broker info) in `.env.local`.
+- **Cloudflare Free Tier Consideration:** Optimize queries, reduce MQTT message frequency, and cache results where possible.
+
+## Best Practices
+- **Minimal Dependencies:** Use only essential packages to keep performance high.
+- **Utility Functions:** Encapsulate shared logic in `lib/` (e.g., formatting, API helpers).
+- **Efficient Styling:** Use Tailwind CSS utilities and ShadCN/UI components for a clean, responsive design.
+- **Performance Optimization:** 
+  - Use **React Server Components** where possible.
+  - Minimize client-side rendering for better performance.
+  - Avoid unnecessary API calls with caching strategies.
+  - Use **Server Actions** for efficient, secure data mutations.
