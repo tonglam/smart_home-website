@@ -1,10 +1,30 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { securityEventsData } from "@/lib/mockChartData";
-import { Shield } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FaShieldAlt } from "react-icons/fa";
+import {
+  Bar,
+  BarChart,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface SecurityEventsChartProps {
   className?: string;
@@ -16,8 +36,10 @@ export function SecurityEventsChart({ className }: SecurityEventsChartProps) {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            <CardTitle className="text-base font-medium">Security Events</CardTitle>
+            <FaShieldAlt className="h-4 w-4" />
+            <CardTitle className="text-base font-medium">
+              Security Events
+            </CardTitle>
           </div>
           <CardDescription>
             Track and analyze security-related events
@@ -43,13 +65,13 @@ export function SecurityEventsChart({ className }: SecurityEventsChartProps) {
               data={securityEventsData}
               margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
             >
-              <XAxis 
-                dataKey="date" 
-                tick={{ fontSize: 12 }} 
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
@@ -57,22 +79,22 @@ export function SecurityEventsChart({ className }: SecurityEventsChartProps) {
               />
               <Tooltip />
               <Legend />
-              <Bar 
-                dataKey="motionAlerts" 
-                name="Motion Alerts" 
-                fill="hsl(var(--chart-1))" 
+              <Bar
+                dataKey="motionAlerts"
+                name="Motion Alerts"
+                fill="hsl(var(--chart-1))"
                 radius={[4, 4, 0, 0]}
               />
-              <Bar 
-                dataKey="doorEvents" 
-                name="Door Events" 
-                fill="hsl(var(--chart-2))" 
+              <Bar
+                dataKey="doorEvents"
+                name="Door Events"
+                fill="hsl(var(--chart-2))"
                 radius={[4, 4, 0, 0]}
               />
-              <Bar 
-                dataKey="windowEvents" 
-                name="Window Events" 
-                fill="hsl(var(--chart-3))" 
+              <Bar
+                dataKey="windowEvents"
+                name="Window Events"
+                fill="hsl(var(--chart-3))"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
@@ -81,7 +103,9 @@ export function SecurityEventsChart({ className }: SecurityEventsChartProps) {
         <div className="mt-2 grid grid-cols-3 gap-2">
           <Card className="p-2 border border-border/50 bg-card/50">
             <div className="flex flex-col">
-              <span className="text-xs text-muted-foreground">Total Events</span>
+              <span className="text-xs text-muted-foreground">
+                Total Events
+              </span>
               <span className="text-lg font-semibold">63</span>
             </div>
           </Card>

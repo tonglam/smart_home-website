@@ -24,11 +24,11 @@ import {
   Tooltip,
 } from "recharts";
 
-interface DeviceUsageChartProps {
+interface DeviceModeUsageChartProps {
   className?: string;
 }
 
-export function DeviceUsageChart({ className }: DeviceUsageChartProps) {
+export function DeviceModeUsageChart({ className }: DeviceModeUsageChartProps) {
   const COLORS = [
     "hsl(var(--chart-1))",
     "hsl(var(--chart-2))",

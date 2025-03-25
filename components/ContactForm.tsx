@@ -20,9 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { FaExclamationCircle } from "react-icons/fa";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -208,7 +208,7 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
 
               <div className="text-sm text-muted-foreground">
                 <p className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
+                  <FaExclamationCircle className="h-4 w-4" />
                   All fields marked with * are required
                 </p>
               </div>

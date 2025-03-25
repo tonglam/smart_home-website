@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BellRing } from "lucide-react";
 import { useState } from "react";
+import { FaBell } from "react-icons/fa";
 import { toast } from "sonner";
 
 interface EmailChangeDialogProps {
@@ -64,7 +64,7 @@ export function EmailChangeDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <Alert className="bg-muted/50">
             <div className="flex items-start">
-              <BellRing className="h-4 w-4 mt-0.5 mr-2 text-muted-foreground" />
+              <FaBell className="h-4 w-4 mt-0.5 mr-2 text-muted-foreground" />
               <AlertDescription className="text-muted-foreground text-sm">
                 This email address will be used to receive important alerts and
                 notifications from your smart home devices.

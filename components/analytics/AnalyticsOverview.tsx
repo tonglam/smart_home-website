@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calculator } from "lucide-react";
-import { DeviceUsageChart } from "./DeviceUsageChart";
+import { FaCalculator } from "react-icons/fa";
+import { DeviceModeUsageChart } from "./DeviceModeUsageChart";
 import { SecurityEventsChart } from "./SecurityEventsChart";
 
 export function AnalyticsOverview() {
@@ -24,7 +24,7 @@ export function AnalyticsOverview() {
           </TabsList>
 
           <TabsContent value="devices" className="space-y-6">
-            <DeviceUsageChart />
+            <DeviceModeUsageChart />
 
             <Card>
               <CardHeader>
@@ -105,7 +105,7 @@ export function AnalyticsOverview() {
                 <div className="border rounded-lg p-4">
                   <div className="flex items-start gap-4">
                     <div className="p-2 bg-primary/10 rounded-full">
-                      <Calculator className="h-5 w-5 text-primary" />
+                      <FaCalculator className="h-5 w-5 text-primary" />
                     </div>
                     <div className="space-y-1">
                       <h3 className="font-medium text-sm">
@@ -123,7 +123,7 @@ export function AnalyticsOverview() {
                 <div className="border rounded-lg p-4">
                   <div className="flex items-start gap-4">
                     <div className="p-2 bg-primary/10 rounded-full">
-                      <Calculator className="h-5 w-5 text-primary" />
+                      <FaCalculator className="h-5 w-5 text-primary" />
                     </div>
                     <div className="space-y-1">
                       <h3 className="font-medium text-sm">
