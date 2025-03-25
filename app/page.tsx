@@ -13,7 +13,7 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 
 export default function Dashboard() {
-  const { isSignedIn, user, isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
   const { signOut, openSignIn } = useClerk();
   const [isHomeConnected, setIsHomeConnected] = useState(false);
   const [showConnectHome, setShowConnectHome] = useState(false);
@@ -61,7 +61,7 @@ export default function Dashboard() {
     if (isLoaded) {
       checkHomeConnection();
     }
-  }, [isLoaded, checkHomeConnection, isSignedIn]);
+  }, [isLoaded, checkHomeConnection]);
 
   const handleSignIn = () => {
     openSignIn();
@@ -92,8 +92,10 @@ export default function Dashboard() {
   };
 
   const handleOpenConnectHome = () => {
-    if (isSignedIn) {
+    if (user?.id) {
       setShowConnectHome(true);
+    } else {
+      handleSignIn();
     }
   };
 
@@ -105,17 +107,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  // Get the current Navbar component JSX
-  const navbarComponent = (
-    <Navbar
-      isSignedIn={!!isSignedIn}
-      isHomeConnected={isHomeConnected}
-      onSignIn={handleSignIn}
-      onSignOut={handleSignOut}
-      onOpenConnectHome={handleOpenConnectHome}
-    />
-  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -129,15 +120,17 @@ export default function Dashboard() {
 
         {/* Home Connection Check */}
         {!isHomeConnected && !isLoading && (
-          <HomeConnectionPrompt
-            isSignedIn={!!isSignedIn}
-            onOpenConnectHome={handleOpenConnectHome}
-            onSignIn={handleSignIn}
-          />
+          <HomeConnectionPrompt onOpenConnectHome={handleOpenConnectHome} />
         )}
 
-        {/* Navbar - using the existing component */}
-        {navbarComponent}
+        {/* Navbar */}
+        <Navbar
+          isSignedIn={!!user?.id}
+          isHomeConnected={isHomeConnected}
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
+          onOpenConnectHome={handleOpenConnectHome}
+        />
 
         {/* Main Content */}
         <main
@@ -150,20 +143,10 @@ export default function Dashboard() {
             <WelcomeBanner />
 
             {/* Main Content Tabs */}
-            <MainTabs
-              isHomeConnected={isHomeConnected}
-              isSignedIn={!!isSignedIn}
-              onOpenConnectHome={handleOpenConnectHome}
-              onSignIn={handleSignIn}
-            />
+            <MainTabs />
 
             {/* Recent Activities Feed */}
-            <ActivitiesFeed
-              isHomeConnected={isHomeConnected}
-              isSignedIn={!!isSignedIn}
-              onOpenConnectHome={handleOpenConnectHome}
-              onSignIn={handleSignIn}
-            />
+            <ActivitiesFeed />
           </div>
         </main>
 
