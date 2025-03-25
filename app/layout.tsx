@@ -1,12 +1,18 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  adjustFontFallback: true,
+});
 
 export const metadata: Metadata = {
-  title: 'Smart Home System',
-  description: 'Monitor and control your smart home devices',
+  title: "Smart Home System",
+  description: "Monitor and control your smart home devices",
 };
 
 export default function RootLayout({
@@ -15,8 +21,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
-    </html>
+    <ClerkProvider
+      afterSignInUrl="/dashboard"
+      signInUrl="/signin"
+      signUpUrl="/signup"
+    >
+      <html lang="en">
+        <body className={inter.className}>{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

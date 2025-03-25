@@ -1,11 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { homeCache } from '@/lib/homeCache';
-import { Label } from '@/components/ui/label';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useUser } from "@clerk/nextjs";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface ConnectHomeDialogProps {
   open: boolean;
@@ -13,57 +20,73 @@ interface ConnectHomeDialogProps {
   onConnect: (homeId: string) => void;
 }
 
-export function ConnectHomeDialog({ open, onOpenChange, onConnect }: ConnectHomeDialogProps) {
-  const [homeId, setHomeId] = useState('');
+export function ConnectHomeDialog({
+  open,
+  onOpenChange,
+  onConnect,
+}: ConnectHomeDialogProps) {
+  const [homeId, setHomeId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
 
   const handleConnect = async () => {
-    if (!homeId.trim()) return;
+    if (!user?.id) {
+      toast.error("Authentication required", {
+        description: "Please sign in to connect your home.",
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Cache the home ID
-      if (homeCache.setHomeId(homeId)) {
-        onConnect(homeId);
-      }
+      // Simulate API call to validate home ID
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      onConnect(homeId);
     } catch (error) {
-      console.error('Error connecting home:', error);
+      console.error("Error connecting home:", error);
+      toast.error("Failed to connect home", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    setHomeId('');
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent aria-describedby="connect-home-description">
         <DialogHeader>
-          <DialogTitle>Connect Your Home</DialogTitle>
-          <DialogDescription>
-            Enter your home ID to connect and access all features. You can find your home ID in your account settings.
+          <DialogTitle>Connect Your Smart Home</DialogTitle>
+          <DialogDescription id="connect-home-description">
+            Enter your home ID to connect and manage your smart home devices.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="homeId">Home ID</Label>
-            <Input
-              id="homeId"
-              placeholder="Enter your home ID"
-              value={homeId}
-              onChange={(e) => setHomeId(e.target.value)}
-            />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleConnect();
+          }}
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="homeId">Home ID</Label>
+              <Input
+                id="homeId"
+                placeholder="Enter your home ID"
+                value={homeId}
+                onChange={(e) => setHomeId(e.target.value)}
+                disabled={isLoading}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={!homeId || isLoading}
+            >
+              {isLoading ? "Connecting..." : "Connect Home"}
+            </Button>
           </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleConnect} disabled={!homeId.trim() || isLoading}>
-            {isLoading ? "Connecting..." : "Connect"}
-          </Button>
-        </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

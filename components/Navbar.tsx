@@ -1,10 +1,14 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Github, HelpCircle, Home, LogIn, HomeIcon } from 'lucide-react';
-import { UserCard } from '@/components/UserCard';
-import Link from 'next/link';
+import { ClerkUserAdapter } from "@/components/ClerkUserAdapter";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Github, HelpCircle, Home, HomeIcon, LogIn } from "lucide-react";
+import Link from "next/link";
 
 interface NavbarProps {
   isSignedIn: boolean;
@@ -14,12 +18,12 @@ interface NavbarProps {
   onOpenConnectHome: () => void;
 }
 
-export function Navbar({ 
-  isSignedIn, 
-  isHomeConnected, 
-  onSignIn, 
-  onSignOut, 
-  onOpenConnectHome 
+export function Navbar({
+  isSignedIn,
+  isHomeConnected,
+  onSignIn,
+  onSignOut,
+  onOpenConnectHome,
 }: NavbarProps) {
   return (
     <nav className="border-b sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-40">
@@ -40,23 +44,28 @@ export function Navbar({
             {/* Connect Home Button with Tooltip */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
+                <Button
                   variant={isSignedIn ? "outline" : "ghost"}
-                  size="sm" 
+                  size="sm"
                   className="flex items-center gap-2"
                   onClick={onOpenConnectHome}
                   disabled={!isSignedIn}
                 >
                   <Home className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {isHomeConnected ? 'Connected' : isSignedIn ? 'Connect Home' : 'Sign in to Connect'}
+                    {isHomeConnected
+                      ? "Connected"
+                      : isSignedIn
+                      ? "Connect Home"
+                      : "Sign in to Connect"}
                   </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isSignedIn 
-                  ? "Connect your home to receive alerts and control your devices" 
-                  : "Sign in first to connect your smart home"}
+                <p>
+                  {isSignedIn
+                    ? "Connect your home to receive alerts and control your devices"
+                    : "Sign in first to connect your smart home"}
                 </p>
                 {isSignedIn && !isHomeConnected && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -65,14 +74,19 @@ export function Navbar({
                 )}
               </TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-10 w-10 rounded-full transition-colors hover:bg-muted"
-                  onClick={() => window.open('https://github.com/yourusername/smart-home', '_blank')}
+                  onClick={() =>
+                    window.open(
+                      "https://github.com/tonglam/smart_home-website",
+                      "_blank"
+                    )
+                  }
                 >
                   <Github className="h-5 w-5" />
                 </Button>
@@ -81,7 +95,7 @@ export function Navbar({
                 <p>View Source Code</p>
               </TooltipContent>
             </Tooltip>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link href="/support">
@@ -100,12 +114,7 @@ export function Navbar({
             </Tooltip>
 
             {isSignedIn ? (
-              <UserCard
-                name="John Doe"
-                email="john@example.com"
-                imageUrl="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                onSignOut={onSignOut}
-              />
+              <ClerkUserAdapter onSignOut={onSignOut} />
             ) : (
               <Button variant="default" size="sm" onClick={onSignIn}>
                 <LogIn className="mr-2 h-4 w-4" />

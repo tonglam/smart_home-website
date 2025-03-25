@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.12.9",
     "@hookform/resolvers": "^3.10.0",
     "@next/swc-wasm-nodejs": "^13.5.10",
     "@radix-ui/react-accordion": "^1.2.3",
@@ -38,7 +39,6 @@
     "@radix-ui/react-toggle": "^1.1.0",
     "@radix-ui/react-toggle-group": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.8",
-    "@types/node": "20.6.2",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "^10.4.21",
@@ -70,6 +70,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
+    "@types/node": "^22.13.13",
     "cssnano": "^7.0.6"
   }
 }
