@@ -1,5 +1,6 @@
 "use client";
 
+import { sendContactEmail } from "@/app/actions/email";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -19,25 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { contactFormSchema, type ContactFormData } from "@/lib/schemas/contact";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaExclamationCircle } from "react-icons/fa";
 import { toast } from "sonner";
-import * as z from "zod";
-
-const formSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional(),
-  subject: z.string().min(5, "Subject must be at least 5 characters"),
-  priority: z.enum(["low", "medium", "high"]),
-  description: z
-    .string()
-    .min(20, "Please provide more details (minimum 20 characters)"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 interface ContactFormProps {
   onSubmitSuccess?: () => void;
@@ -47,24 +35,29 @@ interface ContactFormProps {
 export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
     defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      subject: "",
       priority: "medium",
+      description: "",
     },
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (values: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      // Log form data and simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await sendContactEmail(values);
       toast.success("Your report has been submitted successfully", {
-        description: "We&apos;ll get back to you within 24-48 hours.",
+        description: "We'll get back to you within 24-48 hours.",
       });
       form.reset();
       onSubmitSuccess?.();
-    } catch {
+    } catch (error) {
+      console.error("Error submitting form:", error);
       toast.error("Failed to submit report", {
         description: "Please try again or contact support directly.",
       });
