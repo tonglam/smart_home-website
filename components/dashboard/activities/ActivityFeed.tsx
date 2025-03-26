@@ -73,7 +73,7 @@ export function DeviceActivityFeed({
 
     const intervalId = setInterval(fetchActivities, 60000);
     return () => clearInterval(intervalId);
-  }, [fetchActivities, initialEvents.length]);
+  }, [fetchActivities, initialEvents.length, lastFetched]);
 
   const handleRemoveActivity = useCallback((id: string) => {
     setActivities((current) =>
