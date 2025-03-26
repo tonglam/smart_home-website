@@ -1,11 +1,11 @@
 "use client";
 
-import { SecurityEventsChart as OptimizedSecurityEventsChart } from "@/components/analytics/charts";
+import { SecurityEventAnalytics } from "@/components/analytics/charts";
 
 interface SecurityEventsChartProps {
   className?: string;
 }
 
-export function SecurityEventsChart(props: SecurityEventsChartProps) {
-  return <OptimizedSecurityEventsChart {...props} />;
+export function SecurityEventsChart({ className }: SecurityEventsChartProps) {
+  return <SecurityEventAnalytics className={className} />;
 }
