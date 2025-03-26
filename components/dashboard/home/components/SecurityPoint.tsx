@@ -8,11 +8,11 @@ interface SecurityPointProps {
   name: string;
   type: string;
   status: string;
-  lastActivity?: string;
+  lastActivity: string;
 }
 
 export function SecurityPoint({ name, type, status }: SecurityPointProps) {
-  const isDoor = type.toLowerCase() === "door";
+  const isDoor = type.toLowerCase().includes("door");
   const isClosed = status.toLowerCase() === "closed";
 
   return (

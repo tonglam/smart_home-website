@@ -4,7 +4,7 @@ import { Activity, getRecentActivities } from "@/app/actions/activities";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityItem } from "./components/ActivityItem";
 import { EmptyState } from "./components/EmptyState";
 import { ErrorState } from "./components/ErrorState";
@@ -12,19 +12,23 @@ import { FeedHeader } from "./components/FeedHeader";
 
 interface DeviceActivityFeedProps {
   className?: string;
+  homeId: string;
 }
 
-export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
+export function DeviceActivityFeed({
+  className,
+  homeId,
+}: DeviceActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const data = (await getRecentActivities()) as Activity[];
+      const data = (await getRecentActivities(homeId)) as Activity[];
       setActivities(data);
     } catch (err) {
       setError(
@@ -33,10 +37,16 @@ export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [homeId]);
 
   useEffect(() => {
     fetchActivities();
+  }, [fetchActivities]);
+
+  const handleRemoveActivity = useCallback((id: string) => {
+    setActivities((current) =>
+      current.filter((activity) => activity.id !== id)
+    );
   }, []);
 
   if (isLoading) {
@@ -64,14 +74,17 @@ export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
       <FeedHeader
         onToggleExpand={() => setIsExpanded(!isExpanded)}
         isExpanded={isExpanded}
+        activityCount={activities.length}
       />
       <Collapsible open={isExpanded}>
-        <CollapsibleContent>
-          <div className="divide-y">
-            {activities.map((activity) => (
-              <ActivityItem key={activity.id} activity={activity} />
-            ))}
-          </div>
+        <CollapsibleContent className="divide-y">
+          {activities.map((activity) => (
+            <ActivityItem
+              key={activity.id}
+              activity={activity}
+              onRemove={handleRemoveActivity}
+            />
+          ))}
         </CollapsibleContent>
       </Collapsible>
     </Card>

@@ -3,10 +3,12 @@
 import { getSecurityPoints, type SecurityPoint } from "@/app/actions/security";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { HiDesktopComputer, HiKey, HiShieldCheck } from "react-icons/hi";
 
 export function SecuritySection() {
+  const { user } = useUser();
   const [securityPoints, setSecurityPoints] = useState<SecurityPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -14,7 +16,12 @@ export function SecuritySection() {
     const fetchSecurityData = async () => {
       try {
         setIsLoading(true);
-        const data = await getSecurityPoints();
+        const homeId = user?.publicMetadata?.homeId as string;
+        if (!homeId) {
+          console.error("No homeId found in user metadata");
+          return;
+        }
+        const data = await getSecurityPoints(homeId);
         setSecurityPoints(data);
       } catch (error) {
         console.error("Error fetching security data:", error);
@@ -23,8 +30,10 @@ export function SecuritySection() {
       }
     };
 
-    fetchSecurityData();
-  }, []);
+    if (user) {
+      fetchSecurityData();
+    }
+  }, [user]);
 
   if (isLoading) {
     return (

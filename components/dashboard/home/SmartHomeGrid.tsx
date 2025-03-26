@@ -1,23 +1,60 @@
 "use client";
 
+import type { SecurityPoint as SecurityPointType } from "@/app/actions/security";
+import { getSecurityPoints } from "@/app/actions/security";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAutomation } from "@/hooks";
-import { securityPoints } from "@/lib/data";
 import { useUser } from "@clerk/nextjs";
-import { Shield, Wand2 } from "lucide-react";
+import { BookOpenIcon, FilmIcon, HomeIcon, Shield, Wand2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { LightingSection } from "./LightingSection";
 import { AutomationMode } from "./components/AutomationMode";
 import { SecurityPoint } from "./components/SecurityPoint";
 
+const iconComponents = {
+  Home: HomeIcon,
+  Film: FilmIcon,
+  BookOpen: BookOpenIcon,
+};
+
 export function SmartHomeGrid() {
-  const { isSignedIn } = useUser();
-  const { modes, toggleMode, toggleInfo } = useAutomation();
+  const { isSignedIn, user } = useUser();
+  const { modes, isLoading, handleModeToggle } = useAutomation();
+  const [securityPoints, setSecurityPoints] = useState<SecurityPointType[]>([]);
+  const homeId = user?.publicMetadata?.homeId as string;
+
+  useEffect(() => {
+    async function fetchSecurityPoints() {
+      try {
+        const points = await getSecurityPoints(homeId);
+        setSecurityPoints(points);
+      } catch (error) {
+        console.error("[SmartHomeGrid] Error fetching security points:", error);
+      }
+    }
+
+    if (homeId) {
+      fetchSecurityPoints();
+    }
+  }, [isSignedIn, homeId]);
+
+  if (!isSignedIn || !homeId) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="text-sm text-muted-foreground text-center py-2 col-span-full">
+          {!isSignedIn
+            ? "Please sign in to view your smart home dashboard"
+            : "Please connect your home to view the dashboard"}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Lighting Section */}
       <div className="order-1">
-        <LightingSection isConnected={!!isSignedIn} />
+        <LightingSection isConnected={!!isSignedIn} homeId={homeId} />
       </div>
 
       {/* Automation Section */}
@@ -33,9 +70,11 @@ export function SmartHomeGrid() {
             <AutomationMode
               key={mode.id}
               {...mode}
+              icon={iconComponents[mode.icon as keyof typeof iconComponents]}
               isConnected={!!isSignedIn}
-              onToggleMode={() => toggleMode(mode.id)}
-              onToggleInfo={() => toggleInfo(mode.id)}
+              isLoading={isLoading}
+              onToggleMode={() => handleModeToggle(mode)}
+              onToggleInfo={() => {}}
             />
           ))}
         </CardContent>

@@ -1,9 +1,13 @@
 "use client";
 
-import { getLightingData, type Light } from "@/app/actions/lighting";
+import {
+  getLightingData,
+  updateLightState,
+  type Light,
+} from "@/app/actions/lighting";
 import { useEffect, useState } from "react";
 
-export function useLighting() {
+export function useLighting(homeId: string) {
   const [lights, setLights] = useState<Light[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -13,7 +17,7 @@ export function useLighting() {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await getLightingData();
+        const data = await getLightingData(homeId);
         setLights(data);
       } catch (error) {
         console.error("Error fetching lighting data:", error);
@@ -24,30 +28,57 @@ export function useLighting() {
     };
 
     fetchLightingData();
-  }, []);
+  }, [homeId]);
 
-  const toggleLight = (id: string) => {
-    setLights(
-      lights.map((light) =>
-        light.id === id ? { ...light, isOn: !light.isOn } : light
-      )
-    );
+  const toggleLight = async (id: string) => {
+    const light = lights.find((l) => l.id === id);
+    if (!light) return;
+
+    const success = await updateLightState(id, homeId, {
+      isOn: !light.isOn,
+    });
+
+    if (success) {
+      setLights(
+        lights.map((light) =>
+          light.id === id ? { ...light, isOn: !light.isOn } : light
+        )
+      );
+    }
   };
 
-  const adjustBrightness = (id: string, value: number) => {
-    setLights(
-      lights.map((light) =>
-        light.id === id ? { ...light, brightness: value } : light
-      )
-    );
+  const adjustBrightness = async (id: string, value: number) => {
+    const light = lights.find((l) => l.id === id);
+    if (!light) return;
+
+    const success = await updateLightState(id, homeId, {
+      brightness: value,
+    });
+
+    if (success) {
+      setLights(
+        lights.map((light) =>
+          light.id === id ? { ...light, brightness: value } : light
+        )
+      );
+    }
   };
 
-  const adjustTemperature = (id: string, value: number) => {
-    setLights(
-      lights.map((light) =>
-        light.id === id ? { ...light, temperature: value } : light
-      )
-    );
+  const adjustTemperature = async (id: string, value: number) => {
+    const light = lights.find((l) => l.id === id);
+    if (!light) return;
+
+    const success = await updateLightState(id, homeId, {
+      temperature: value,
+    });
+
+    if (success) {
+      setLights(
+        lights.map((light) =>
+          light.id === id ? { ...light, temperature: value } : light
+        )
+      );
+    }
   };
 
   return {

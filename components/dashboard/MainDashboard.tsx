@@ -23,18 +23,24 @@ const LoadingState = () => (
 const DashboardMainContent = ({
   isHomeConnected,
   isLoading,
+  homeId,
 }: {
   isHomeConnected: boolean;
   isLoading: boolean;
-}) => (
-  <main className={`flex-1 ${!isHomeConnected && !isLoading ? "blur-sm" : ""}`}>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
-      <UserWelcomeBanner />
-      <MainTabs />
-      <DeviceActivityFeed />
-    </div>
-  </main>
-);
+  homeId?: string;
+}) => {
+  return (
+    <main
+      className={`flex-1 ${!isHomeConnected && !isLoading ? "blur-sm" : ""}`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
+        <UserWelcomeBanner />
+        <MainTabs />
+        {homeId && <DeviceActivityFeed homeId={homeId} />}
+      </div>
+    </main>
+  );
+};
 
 export function MainDashboard() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -135,6 +141,7 @@ export function MainDashboard() {
           <DashboardMainContent
             isHomeConnected={isHomeConnected}
             isLoading={isLoading}
+            homeId={getCurrentHomeId()}
           />
         </div>
       </main>

@@ -18,16 +18,16 @@ export type EventLog = {
   event_type: string;
   old_state?: string;
   new_state?: string;
-  create_at?: string;
+  created_at?: string;
 };
 
 export type AlertLog = {
   id?: number;
   home_id: string;
+  user_id: string;
   device_id?: string;
   message: string;
   sent_status?: number;
-  triggered_at?: string;
   created_at?: string;
 };
 
@@ -78,18 +78,33 @@ async function executeD1Query<T = unknown>(
   }
 
   const result = await response.json();
-  return result.result || [];
+  return result.result?.[0]?.results || [];
 }
 
 // Device Operations
 export async function getDevices(homeId: string): Promise<Device[]> {
   try {
     return await executeD1Query<Device>(
-      "SELECT * FROM devices WHERE home_id = ?",
+      "SELECT * FROM devices WHERE home_id = ? ORDER BY created_at DESC",
       [homeId]
     );
   } catch (error) {
     logError(error, "Error fetching devices");
+    return [];
+  }
+}
+
+export async function getSecurityDevices(homeId: string): Promise<Device[]> {
+  try {
+    return await executeD1Query<Device>(
+      `SELECT * FROM devices 
+       WHERE home_id = ? 
+       AND type IN ('door_sensor', 'window_sensor') 
+       ORDER BY created_at DESC`,
+      [homeId]
+    );
+  } catch (error) {
+    logError(error, "Error fetching security devices");
     return [];
   }
 }
@@ -133,7 +148,7 @@ export async function createDevice(
 
 export async function updateDevice(
   deviceId: string,
-  updates: Partial<Device>
+  updates: Partial<Omit<Device, "id" | "created_at">>
 ): Promise<{ success: boolean }> {
   try {
     const updateFields: string[] = [];
@@ -173,7 +188,7 @@ export async function deleteDevice(
 
 // Event Log Operations
 export async function logEvent(
-  event: Omit<EventLog, "id" | "create_at">
+  event: Omit<EventLog, "id" | "created_at">
 ): Promise<{ success: boolean; id?: number }> {
   try {
     const results = await executeD1Query<{ id: number }>(
@@ -205,7 +220,13 @@ export async function getEvents(
 ): Promise<EventLog[]> {
   try {
     return await executeD1Query<EventLog>(
-      "SELECT * FROM event_log WHERE home_id = ? ORDER BY create_at DESC LIMIT ?",
+      `SELECT event_log.*, devices.name as device_name 
+       FROM event_log 
+       LEFT JOIN devices ON event_log.device_id = devices.id 
+       WHERE event_log.home_id = ? 
+       AND event_log.created_at >= datetime('now', '-24 hours')
+       ORDER BY event_log.created_at DESC 
+       LIMIT ?`,
       [homeId, limit]
     );
   } catch (error) {
@@ -220,7 +241,7 @@ export async function getDeviceEvents(
 ): Promise<EventLog[]> {
   try {
     return await executeD1Query<EventLog>(
-      "SELECT * FROM event_log WHERE device_id = ? ORDER BY create_at DESC LIMIT ?",
+      "SELECT * FROM event_log WHERE device_id = ? ORDER BY created_at DESC LIMIT ?",
       [deviceId, limit]
     );
   } catch (error) {
@@ -231,15 +252,16 @@ export async function getDeviceEvents(
 
 // Alert Log Operations
 export async function createAlert(
-  alert: Omit<AlertLog, "id" | "triggered_at" | "created_at">
+  alert: Omit<AlertLog, "id" | "created_at">
 ): Promise<{ success: boolean; id?: number }> {
   try {
     const results = await executeD1Query<{ id: number }>(
-      `INSERT INTO alert_log (home_id, device_id, message, sent_status)
-       VALUES (?, ?, ?, ?)
+      `INSERT INTO alert_log (home_id, user_id, device_id, message, sent_status)
+       VALUES (?, ?, ?, ?, ?)
        RETURNING id`,
       [
         alert.home_id,
+        alert.user_id,
         alert.device_id || null,
         alert.message,
         alert.sent_status || 0,
@@ -262,7 +284,12 @@ export async function getAlerts(
 ): Promise<AlertLog[]> {
   try {
     return await executeD1Query<AlertLog>(
-      "SELECT * FROM alert_log WHERE home_id = ? ORDER BY triggered_at DESC LIMIT ?",
+      `SELECT alert_log.*, devices.name as device_name 
+       FROM alert_log 
+       LEFT JOIN devices ON alert_log.device_id = devices.id 
+       WHERE alert_log.home_id = ? 
+       ORDER BY alert_log.created_at DESC 
+       LIMIT ?`,
       [homeId, limit]
     );
   } catch (error) {
@@ -276,7 +303,7 @@ export async function updateAlertStatus(
   sentStatus: number
 ): Promise<{ success: boolean }> {
   try {
-    await executeD1Query("UPDATE alert_log SET sent_status = ? WHERE id = ?", [
+    await executeD1Query("UPDATE alert_log SET dismissed = ? WHERE id = ?", [
       sentStatus,
       alertId,
     ]);
@@ -285,4 +312,53 @@ export async function updateAlertStatus(
     logError(error, "Error updating alert status");
     return { success: false };
   }
+}
+
+// Utility functions from db.util.ts (without caching)
+export async function fetchDeviceWithEvents(
+  deviceId: string,
+  homeId: string
+): Promise<{
+  device: Device | null;
+  events: EventLog[];
+  alerts: AlertLog[];
+}> {
+  const [device, events, alerts] = await Promise.all([
+    getDeviceById(deviceId),
+    getDeviceEvents(deviceId),
+    getAlerts(homeId),
+  ]);
+
+  // Filter alerts for this device
+  const deviceAlerts = alerts.filter((alert) => alert.device_id === deviceId);
+
+  return {
+    device,
+    events: events.map((event) => ({
+      id: event.id || 0,
+      home_id: event.home_id,
+      device_id: event.device_id,
+      event_type: event.event_type,
+      old_state: event.old_state,
+      new_state: event.new_state,
+      created_at: event.created_at || new Date().toISOString(),
+    })),
+    alerts: deviceAlerts.map((alert) => ({
+      id: alert.id || 0,
+      home_id: alert.home_id,
+      device_id: alert.device_id,
+      user_id: alert.user_id,
+      message: alert.message,
+      created_at: alert.created_at || new Date().toISOString(),
+    })),
+  };
+}
+
+// Utility function to check if a device belongs to a home
+export async function verifyDeviceAccess(
+  deviceId: string,
+  homeId: string
+): Promise<boolean> {
+  const device = await getDeviceById(deviceId);
+  return device?.home_id === homeId;
 }

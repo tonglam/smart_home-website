@@ -1,35 +1,25 @@
 "use client";
 
+import { dismissAlert, getCriticalAlerts } from "@/app/actions/critical-alerts";
 import { Alert } from "@/components/dashboard/tabs/types";
+import { useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 
-const INITIAL_ALERTS: Alert[] = [
-  {
-    id: "1",
-    type: "warning",
-    message: "Front door camera battery is low",
-    timestamp: new Date().toLocaleString(),
-    deviceId: "front-door-cam",
-    deviceName: "Front Door Camera",
-  },
-];
-
 export function useAlerts() {
-  const [alerts, setAlerts] = useState<Alert[]>(INITIAL_ALERTS);
+  const { user } = useUser();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchAlerts = useCallback(async () => {
     try {
       setIsLoading(true);
-      // Simulated API call to /api/alerts
-      // In a real app, this would be an actual API call
-      const response = await new Promise<Alert[]>((resolve) => {
-        setTimeout(() => {
-          resolve(INITIAL_ALERTS);
-        }, 1000);
-      });
-
+      const homeId = user?.publicMetadata?.homeId as string;
+      if (!homeId) {
+        setAlerts([]);
+        return;
+      }
+      const response = await getCriticalAlerts(homeId);
       setAlerts(response);
       setError(null);
     } catch (err) {
@@ -39,20 +29,16 @@ export function useAlerts() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user?.publicMetadata?.homeId]);
 
-  const dismissAlert = useCallback(async (alertId: string) => {
+  const handleDismiss = useCallback(async (alertId: string) => {
     try {
-      // Simulated API call to /api/alerts/{alertId}
-      // In a real app, this would be an actual API call
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 500);
-      });
-
-      setAlerts((current) => current.filter((alert) => alert.id !== alertId));
+      const success = await dismissAlert(alertId);
+      if (success) {
+        setAlerts((current) => current.filter((alert) => alert.id !== alertId));
+      }
     } catch (err) {
       console.error("Failed to dismiss alert:", err);
-      // Optionally set an error state or show a toast notification
     }
   }, []);
 
@@ -90,7 +76,7 @@ export function useAlerts() {
     alerts,
     isLoading,
     error,
-    dismissAlert,
+    dismissAlert: handleDismiss,
     addAlert,
     refetch: fetchAlerts,
   };

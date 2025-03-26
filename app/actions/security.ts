@@ -1,6 +1,7 @@
 "use server";
 
-import { securityPoints } from "@/lib/data";
+import * as db from "@/lib/db";
+import { DbDevice } from "@/lib/types/db.types";
 
 export type SecurityPoint = {
   id: string;
@@ -10,13 +11,36 @@ export type SecurityPoint = {
   lastActivity: string;
 };
 
-export async function getSecurityPoints(): Promise<SecurityPoint[]> {
+export async function getSecurityPoints(
+  homeId: string
+): Promise<SecurityPoint[]> {
   try {
-    // This is using mock data for now
-    // In a real application, you would fetch from a database
+    // Get security devices directly from SQL
+    const securityDevices = await db.getSecurityDevices(homeId);
+
+    // Get the latest events for these devices to determine their current status
+    const securityPoints: SecurityPoint[] = await Promise.all(
+      securityDevices.map(async (device: DbDevice) => {
+        const events = await db.getDeviceEvents(device.id, 1);
+        const latestEvent = events[0];
+
+        return {
+          id: device.id,
+          name: device.name,
+          type: device.type,
+          status: latestEvent?.new_state || device.current_state || "unknown",
+          lastActivity:
+            latestEvent?.created_at ||
+            device.last_updated ||
+            device.created_at ||
+            new Date().toISOString(),
+        };
+      })
+    );
+
     return securityPoints;
   } catch (error) {
-    console.error("Error fetching security points:", error);
+    console.error("[getSecurityPoints] Error fetching security points:", error);
     return [];
   }
 }

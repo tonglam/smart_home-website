@@ -1,6 +1,7 @@
 "use server";
 
-import { defaultAutomationModes } from "@/lib/data";
+import * as db from "@/lib/db";
+import { automationModes } from "@/lib/utils/defaults.util";
 
 export type AutomationMode = {
   id: string;
@@ -10,13 +11,79 @@ export type AutomationMode = {
   description: string;
 };
 
-export async function getAutomationModes(): Promise<AutomationMode[]> {
+export async function getAutomationModes(
+  homeId: string
+): Promise<AutomationMode[]> {
   try {
-    // This is using mock data for now
-    // In a real application, you would fetch from a database
-    return defaultAutomationModes;
+    // Get all lights to determine active mode
+    const lights = await db.getDevices(homeId);
+    const lightDevices = lights.filter((device) => device.type === "light");
+
+    // Return modes with active state based on lights
+    return automationModes.map((mode) => ({
+      ...mode,
+      active: lightDevices.some((light) => light.mode === mode.id),
+    }));
   } catch (error) {
     console.error("Error fetching automation modes:", error);
-    return [];
+    // Return modes with no active states in case of error
+    return automationModes.map((mode) => ({
+      ...mode,
+      active: false,
+    }));
+  }
+}
+
+export async function toggleAutomationMode(
+  homeId: string,
+  modeId: string
+): Promise<boolean> {
+  try {
+    // Get all lights in this home
+    const lights = await db.getDevices(homeId);
+    const lightDevices = lights.filter((device) => device.type === "light");
+
+    if (lightDevices.length === 0) {
+      return false;
+    }
+
+    // Get the mode name from the predefined modes
+    const targetMode = automationModes.find((m) => m.id === modeId);
+    if (!targetMode) {
+      throw new Error(`Invalid mode: ${modeId}`);
+    }
+
+    // Check if the mode is currently active
+    const isCurrentlyActive = lightDevices.every(
+      (light) => light.mode === modeId
+    );
+
+    // Update each light's mode and log the event
+    const updatePromises = lightDevices.map(async (light) => {
+      const oldMode = light.mode;
+
+      // If the mode is currently active, set it to undefined, otherwise set it to the target mode
+      const newMode = isCurrentlyActive ? undefined : targetMode.id;
+
+      // Update device mode
+      await db.updateDevice(light.id, {
+        mode: newMode,
+      });
+
+      // Log the event
+      await db.logEvent({
+        home_id: homeId,
+        device_id: light.id,
+        event_type: "mode_change",
+        old_state: oldMode || "none",
+        new_state: newMode || "none",
+      });
+    });
+
+    await Promise.all(updatePromises);
+    return true;
+  } catch (error) {
+    console.error("Error toggling automation mode:", error);
+    return false;
   }
 }

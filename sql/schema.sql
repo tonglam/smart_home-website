@@ -47,6 +47,7 @@ CREATE TABLE alert_log (
     device_id TEXT,                    -- Optional device reference
     message TEXT NOT NULL,             -- "Front door opened during leave mode"
     sent_status INTEGER DEFAULT 0,     -- Using INTEGER instead of BOOLEAN (0/1)
+    dismissed INTEGER DEFAULT 0,        -- New field: Whether the alert has been dismissed (0/1)
     created_at DATETIME DEFAULT (datetime('now')),
     FOREIGN KEY (device_id) REFERENCES devices(id)
 );

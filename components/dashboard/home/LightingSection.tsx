@@ -8,9 +8,10 @@ import { LightControl } from "./components/LightControl";
 
 export interface LightingSectionProps {
   isConnected: boolean;
+  homeId: string;
 }
 
-export function LightingSection({ isConnected }: LightingSectionProps) {
+export function LightingSection({ isConnected, homeId }: LightingSectionProps) {
   const {
     lights,
     isLoading,
@@ -18,7 +19,7 @@ export function LightingSection({ isConnected }: LightingSectionProps) {
     toggleLight,
     adjustBrightness,
     adjustTemperature,
-  } = useLighting();
+  } = useLighting(homeId);
 
   if (error) {
     return (

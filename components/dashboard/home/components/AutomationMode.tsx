@@ -11,6 +11,7 @@ interface AutomationModeProps {
   active: boolean;
   showInfo?: boolean;
   isConnected: boolean;
+  isLoading?: boolean;
   onToggleMode: () => void;
   onToggleInfo: () => void;
 }
@@ -22,6 +23,7 @@ export function AutomationMode({
   active,
   showInfo = false,
   isConnected,
+  isLoading = false,
   onToggleMode,
   onToggleInfo,
 }: AutomationModeProps) {
@@ -37,6 +39,7 @@ export function AutomationMode({
           size="icon"
           className="h-6 w-6"
           onClick={onToggleInfo}
+          disabled={isLoading}
         >
           <Info className="h-4 w-4" />
         </Button>
@@ -50,10 +53,10 @@ export function AutomationMode({
         variant={active ? "default" : "outline"}
         size="sm"
         className="w-full"
-        disabled={!isConnected}
+        disabled={!isConnected || isLoading}
         onClick={onToggleMode}
       >
-        {active ? "Active" : "Activate"}
+        {isLoading ? "..." : active ? "Active" : "Activate"}
       </Button>
     </div>
   );

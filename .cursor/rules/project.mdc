@@ -43,8 +43,9 @@ alwaysApply: true
   - Fetch client-side data with `useEffect` or `useSWR` when necessary.
 
 ## Configuration & Environment
-- **Environment Variables:** Store sensitive settings (DB credentials, MQTT broker info) in `.env.local`.
+- **Environment Variables:** Store sensitive settings (DB credentials, MQTT broker info) in `.env`.
 - **Cloudflare Free Tier Consideration:** Optimize queries, reduce MQTT message frequency, and cache results where possible.
+- **Cloudflare D1**: Cloudfare D1 db was created remotely, the db named `smart_home_hub_test`, id is `35efce62-75ea-49af-b4ed-f5cd48052ac8`, with data. The app should always connect to this remote D1 db. Use the `--remote` flag to access the remote database
 
 ## Best Practices
 - **Minimal Dependencies:** Use only essential packages to keep performance high.
