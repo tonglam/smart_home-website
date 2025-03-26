@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks";
 import { useState } from "react";
 import {
   EmailAlert,

@@ -91,7 +91,7 @@ interface DeviceActivityFeedProps {
 
 export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

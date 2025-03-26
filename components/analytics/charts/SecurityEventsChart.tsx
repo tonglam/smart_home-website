@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { BarChart } from "@/components/ui/charts/BarChart";
-import { useSecurityAnalytics } from "@/hooks/useSecurityAnalytics";
+import { useSecurityAnalytics } from "@/hooks";
 
 interface SecurityEventsChartProps {
   className?: string;

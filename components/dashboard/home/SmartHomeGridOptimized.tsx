@@ -1,10 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAutomation } from "@/hooks";
 import { securityPoints } from "@/lib/data";
 import { useUser } from "@clerk/nextjs";
 import { Shield, Wand2 } from "lucide-react";
-import { useAutomation } from "../hooks/useAutomation";
 import { LightingSection } from "./LightingSection";
 import { AutomationMode } from "./ui/AutomationMode";
 import { SecurityPoint } from "./ui/SecurityPoint";

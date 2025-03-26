@@ -1,8 +1,8 @@
 "use client";
 
 import { ErrorBoundary } from "@/components/dashboard/ErrorBoundary";
-import { useDashboardTabs } from "@/components/dashboard/hooks/useDashboardTabs";
 import { Tabs } from "@/components/ui/tabs";
+import { useDashboardTabs } from "@/hooks";
 import { cn } from "@/lib/utils";
 import type { DashboardTabsProps, TabValue } from "../types";
 import { TabNavigation } from "./TabNavigation";

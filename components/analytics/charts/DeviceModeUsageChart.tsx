@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { LineChart } from "@/components/ui/charts/LineChart";
-import { useDeviceAnalytics } from "@/hooks/useDeviceAnalytics";
+import { useDeviceAnalytics } from "@/hooks";
 
 interface DeviceModeUsageChartProps {
   className?: string;

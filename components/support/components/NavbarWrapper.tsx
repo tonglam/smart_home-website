@@ -2,7 +2,7 @@
 
 import ConnectHomeDialog from "@/components/ConnectHomeDialog";
 import { Navbar } from "@/components/navigation/Navbar";
-import { useNavigation } from "../hooks/useNavigation";
+import { useNavigation } from "@/hooks/auth/useNavigation";
 
 export function NavbarWrapper() {
   const {
