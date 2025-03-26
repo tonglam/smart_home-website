@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectHomeDialog } from "@/components/ConnectHomeDialog";
+import ConnectHomeDialog from "@/components/ConnectHomeDialog";
 import { ContactForm } from "@/components/ContactForm";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
