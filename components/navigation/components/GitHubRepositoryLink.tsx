@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { FaGithub } from "react-icons/fa";
 
-export function GitHubButton() {
+export function GitHubRepositoryLink() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -22,8 +22,9 @@ export function GitHubButton() {
               "_blank"
             )
           }
+          aria-label="View source code on GitHub"
         >
-          <FaGithub className="h-5 w-5" />
+          <FaGithub className="h-5 w-5" aria-hidden="true" />
         </Button>
       </TooltipTrigger>
       <TooltipContent>

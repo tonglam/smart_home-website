@@ -1,5 +1,9 @@
+import type {
+  GtagEvent,
+  TabSwitchEvent,
+  TabValue,
+} from "@/components/dashboard/types";
 import { useCallback, useEffect, useState } from "react";
-import type { GtagEvent, TabSwitchEvent, TabValue } from "../types";
 
 const TAB_STORAGE_KEY = "dashboard-active-tab";
 const PERFORMANCE_THRESHOLD = 100; // ms

@@ -8,14 +8,16 @@ import { TabLoading } from "./TabLoading";
 
 const TAB_COMPONENTS = {
   overview: dynamic(
-    () =>
-      import("../../home/SmartHomeGridOptimized").then(
-        (mod) => mod.SmartHomeGridOptimized
-      ),
+    () => import("../../home/SmartHomeGrid").then((mod) => mod.SmartHomeGrid),
     { loading: () => <TabLoading /> }
   ),
   monitoring: dynamic(
-    () => import("../MonitoringContent").then((mod) => mod.MonitoringContent),
+    () =>
+      import("../MonitoringContent").then((mod) => {
+        const WrappedMonitoring = () => <mod.MonitoringContent />;
+        WrappedMonitoring.displayName = "WrappedMonitoring";
+        return WrappedMonitoring;
+      }),
     { loading: () => <TabLoading /> }
   ),
   analytics: dynamic(
@@ -33,6 +35,14 @@ interface TabContentLoaderProps {
 
 export const TabContentLoader = memo(({ tab }: TabContentLoaderProps) => {
   const Component = TAB_COMPONENTS[tab];
+
+  if (!Component) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        This tab is currently unavailable
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>

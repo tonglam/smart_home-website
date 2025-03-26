@@ -2,9 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLighting } from "@/hooks/dashboard/useLighting";
 import { Lightbulb } from "lucide-react";
-import { useLighting } from "../hooks/useLighting";
-import { LightControl } from "./ui/LightControl";
+import { LightControl } from "./components/LightControl";
 
 export interface LightingSectionProps {
   isConnected: boolean;

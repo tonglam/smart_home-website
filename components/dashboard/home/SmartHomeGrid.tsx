@@ -6,10 +6,10 @@ import { securityPoints } from "@/lib/data";
 import { useUser } from "@clerk/nextjs";
 import { Shield, Wand2 } from "lucide-react";
 import { LightingSection } from "./LightingSection";
-import { AutomationMode } from "./ui/AutomationMode";
-import { SecurityPoint } from "./ui/SecurityPoint";
+import { AutomationMode } from "./components/AutomationMode";
+import { SecurityPoint } from "./components/SecurityPoint";
 
-export function SmartHomeGridOptimized() {
+export function SmartHomeGrid() {
   const { isSignedIn } = useUser();
   const { modes, toggleMode, toggleInfo } = useAutomation();
 

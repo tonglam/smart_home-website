@@ -1,31 +1,34 @@
 "use client";
 
-import ConnectHomeDialog from "@/components/ConnectHomeDialog";
-import { Navbar } from "@/components/navigation/Navbar";
-import { useNavigation } from "@/hooks/auth/useNavigation";
+import { Navbar } from "@/components/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { useCallback, useState } from "react";
 
 export function NavbarWrapper() {
-  const {
-    isSignedIn,
-    isHomeConnected,
-    showConnectHome,
-    setShowConnectHome,
-    handleOpenConnectHome,
-  } = useNavigation();
+  const { isSignedIn = false } = useAuth();
+  const [isHomeConnected, setIsHomeConnected] = useState(false);
+  const [isConnectingHome, setIsConnectingHome] = useState(false);
+
+  const handleConnectHome = useCallback(async () => {
+    if (isConnectingHome) return;
+
+    try {
+      setIsConnectingHome(true);
+      // TODO: Implement home connection logic
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setIsHomeConnected(true);
+    } catch (error) {
+      console.error("Failed to connect home:", error);
+    } finally {
+      setIsConnectingHome(false);
+    }
+  }, [isConnectingHome]);
 
   return (
-    <>
-      <ConnectHomeDialog
-        open={showConnectHome}
-        onOpenChange={setShowConnectHome}
-        onConnect={() => setShowConnectHome(false)}
-      />
-
-      <Navbar
-        isSignedIn={isSignedIn}
-        isHomeConnected={isHomeConnected}
-        onOpenConnectHome={handleOpenConnectHome}
-      />
-    </>
+    <Navbar
+      isSignedIn={isSignedIn}
+      isHomeConnected={isHomeConnected}
+      onOpenConnectHome={handleConnectHome}
+    />
   );
 }

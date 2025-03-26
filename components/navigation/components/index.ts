@@ -1,5 +1,6 @@
-export { AuthSection } from "./AuthSection";
 export { ConnectHomeButton } from "./ConnectHomeButton";
-export { GitHubButton } from "./GitHubButton";
+export { GitHubRepositoryLink } from "./GitHubRepositoryLink";
+export { MobileMenu } from "./MobileMenu";
 export { NavbarLogo } from "./NavbarLogo";
-export { SupportButton } from "./SupportButton";
+export { SupportLink } from "./SupportLink";
+export { UserAuthSection } from "./UserAuthSection";

@@ -1,14 +1,14 @@
 "use client";
 
 import { updateUserHomeId } from "@/app/actions/user";
-import { ActivitiesFeed } from "@/components/ActivitiesFeed";
-import ConnectHomeDialog from "@/components/ConnectHomeDialog";
-import { Footer } from "@/components/Footer";
-import { HomeConnectionPrompt } from "@/components/HomeConnectionPrompt";
-import { MainTabs } from "@/components/MainTabs";
-import { Navbar } from "@/components/navigation/Navbar";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { WelcomeBanner } from "@/components/WelcomeBanner";
+import { DeviceActivityFeed } from "@/components/dashboard/activities/ActivityFeed";
+import {
+  ConnectionDialog,
+  ConnectionPrompt,
+} from "@/components/dashboard/home-connection";
+import { MainTabs } from "@/components/dashboard/tabs/MainTabs";
+import { UserWelcomeBanner } from "@/components/dashboard/welcome/UserWelcomeBanner";
+import { MainLayout } from "@/components/layout";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 
@@ -20,7 +20,7 @@ const LoadingState = () => (
 );
 
 // MainContent component handling the main content area
-const MainContent = ({
+const DashboardMainContent = ({
   isHomeConnected,
   isLoading,
 }: {
@@ -29,16 +29,15 @@ const MainContent = ({
 }) => (
   <main className={`flex-1 ${!isHomeConnected && !isLoading ? "blur-sm" : ""}`}>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
-      <WelcomeBanner />
+      <UserWelcomeBanner />
       <MainTabs />
-      <ActivitiesFeed />
+      <DeviceActivityFeed />
     </div>
   </main>
 );
 
-// UserHomeConnection component to manage home connection state and logic
-export const MainDashboard = () => {
-  const { user, isLoaded } = useUser();
+export function MainDashboard() {
+  const { user, isLoaded, isSignedIn } = useUser();
   const { openSignIn } = useClerk();
   const [isHomeConnected, setIsHomeConnected] = useState(false);
   const [showConnectHome, setShowConnectHome] = useState(false);
@@ -46,27 +45,16 @@ export const MainDashboard = () => {
 
   // Function to check home connection status from Clerk metadata
   const checkHomeConnection = useCallback(async () => {
-    if (!isLoaded) {
-      return;
-    }
-
+    if (!isLoaded) return;
     if (!user?.id) {
       setIsLoading(false);
       return;
     }
 
     try {
-      // Force refresh user data to get latest metadata
       await user.reload();
-
-      // Check Clerk's public metadata
       const clerkHomeId = user.publicMetadata.homeId;
-
-      if (clerkHomeId && clerkHomeId !== "") {
-        setIsHomeConnected(true);
-      } else {
-        setIsHomeConnected(false);
-      }
+      setIsHomeConnected(!!clerkHomeId && clerkHomeId !== "");
     } catch (error) {
       console.error("Error checking home connection:", error);
       setIsHomeConnected(false);
@@ -76,10 +64,10 @@ export const MainDashboard = () => {
   }, [isLoaded, user]);
 
   // Get current home ID from Clerk metadata
-  const getCurrentHomeId = () => {
+  const getCurrentHomeId = useCallback(() => {
     if (!user?.id) return undefined;
     return user.publicMetadata?.homeId as string | undefined;
-  };
+  }, [user?.id, user?.publicMetadata?.homeId]);
 
   // Check connection status when Clerk data is loaded or metadata changes
   useEffect(() => {
@@ -88,69 +76,68 @@ export const MainDashboard = () => {
     }
   }, [isLoaded, checkHomeConnection]);
 
-  const handleSignIn = () => {
+  const handleSignIn = useCallback(() => {
     openSignIn();
-  };
+  }, [openSignIn]);
 
-  const handleHomeConnect = async (homeId: string) => {
-    if (!user?.id) return;
+  const handleHomeConnect = useCallback(
+    async (homeId: string) => {
+      if (!user?.id) return;
 
-    try {
-      // Update Clerk's public metadata using server action
-      const result = await updateUserHomeId(user.id, homeId);
-
-      if (!result.success) {
-        throw new Error("Failed to update user metadata");
+      try {
+        const result = await updateUserHomeId(user.id, homeId);
+        if (!result.success) {
+          throw new Error("Failed to update user metadata");
+        }
+        setIsHomeConnected(true);
+        setShowConnectHome(false);
+      } catch (error) {
+        console.error("Error connecting home:", error);
+        setIsHomeConnected(false);
       }
+    },
+    [user?.id]
+  );
 
-      setIsHomeConnected(true);
-      setShowConnectHome(false);
-    } catch (error) {
-      console.error("Error connecting home:", error);
-      setIsHomeConnected(false);
-    }
-  };
-
-  const handleOpenConnectHome = () => {
+  const handleOpenConnectHome = useCallback(() => {
     if (user?.id) {
       setShowConnectHome(true);
     } else {
       handleSignIn();
     }
-  };
+  }, [user?.id, handleSignIn]);
 
-  // Show loading state while Clerk data is being loaded
-  if (!isLoaded) {
-    return <LoadingState />;
-  }
+  if (!isLoaded) return <LoadingState />;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <TooltipProvider>
-        <ConnectHomeDialog
-          open={showConnectHome}
-          onOpenChange={setShowConnectHome}
-          onConnect={handleHomeConnect}
-          currentHomeId={getCurrentHomeId()}
-        />
+    <MainLayout
+      isSignedIn={isSignedIn}
+      isHomeConnected={isHomeConnected}
+      onOpenConnectHome={handleOpenConnectHome}
+    >
+      <ConnectionDialog
+        open={showConnectHome}
+        onOpenChange={setShowConnectHome}
+        onConnect={handleHomeConnect}
+        currentHomeId={getCurrentHomeId()}
+      />
 
-        {/* Home Connection Check */}
-        {!isHomeConnected && !isLoading && (
-          <HomeConnectionPrompt onOpenConnectHome={handleOpenConnectHome} />
-        )}
+      {!isHomeConnected && !isLoading && (
+        <ConnectionPrompt onOpenConnectHome={handleOpenConnectHome} />
+      )}
 
-        {/* Navbar */}
-        <Navbar
-          isSignedIn={!!user?.id}
-          isHomeConnected={isHomeConnected}
-          onOpenConnectHome={handleOpenConnectHome}
-        />
-
-        <MainContent isHomeConnected={isHomeConnected} isLoading={isLoading} />
-
-        {/* Footer */}
-        <Footer />
-      </TooltipProvider>
-    </div>
+      <main
+        className="flex-1 flex items-center justify-center py-12 px-4"
+        role="main"
+        aria-labelledby="dashboard-title"
+      >
+        <div className="w-full max-w-7xl">
+          <DashboardMainContent
+            isHomeConnected={isHomeConnected}
+            isLoading={isLoading}
+          />
+        </div>
+      </main>
+    </MainLayout>
   );
-};
+}

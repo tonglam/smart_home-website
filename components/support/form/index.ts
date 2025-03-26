@@ -1,1 +1,1 @@
-export { ContactFormOptimized } from "./ContactFormOptimized";
+export { ContactForm } from "./ContactForm";

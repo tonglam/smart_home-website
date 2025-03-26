@@ -1,7 +1,14 @@
 "use client";
 
-import type { CarouselContextProps } from "@/types/ui";
 import * as React from "react";
+
+export interface CarouselContextProps {
+  orientation: "horizontal" | "vertical";
+  scrollPrev: () => void;
+  scrollNext: () => void;
+  canScrollPrev: boolean;
+  canScrollNext: boolean;
+}
 
 /**
  * Hook for accessing carousel context within Carousel components

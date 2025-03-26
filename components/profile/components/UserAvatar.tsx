@@ -1,20 +1,36 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FaUser } from "react-icons/fa";
+import { useState } from "react";
 
-interface UserAvatarProps {
+export interface UserAvatarProps {
+  /** The user's display name */
   name: string;
+  /** Optional URL for the user's avatar image */
   imageUrl?: string;
+  /** Optional CSS class name */
+  className?: string;
 }
 
-export function UserAvatar({ name, imageUrl }: UserAvatarProps) {
+export function UserAvatar({ name, imageUrl, className }: UserAvatarProps) {
+  const [hasError, setHasError] = useState(false);
+  const initials = name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <Avatar className="h-8 w-8">
-      <AvatarImage src={imageUrl} alt={name} />
-      <AvatarFallback>
-        <FaUser className="h-4 w-4" />
-      </AvatarFallback>
+    <Avatar className={className}>
+      {imageUrl && !hasError ? (
+        <AvatarImage
+          src={imageUrl}
+          alt={`${name}'s avatar`}
+          onError={() => setHasError(true)}
+        />
+      ) : null}
+      <AvatarFallback>{initials}</AvatarFallback>
     </Avatar>
   );
 }

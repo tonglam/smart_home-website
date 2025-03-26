@@ -1,24 +1,28 @@
 "use client";
 
-import { Footer } from "@/components/Footer";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { NavbarWrapper } from "./components/NavbarWrapper";
+import { MainLayout } from "@/components/layout";
+import { useNavigation } from "@/hooks/auth/useNavigation";
 import { SupportCard } from "./components/SupportCard";
 
 export function SupportContent() {
+  const { isSignedIn, isHomeConnected, handleOpenConnectHome } =
+    useNavigation();
+
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-background flex flex-col">
-        <NavbarWrapper />
-
-        <main className="flex-1 flex items-center justify-center py-12 px-4">
-          <div className="w-full max-w-4xl">
-            <SupportCard />
-          </div>
-        </main>
-
-        <Footer />
-      </div>
-    </TooltipProvider>
+    <MainLayout
+      isSignedIn={isSignedIn}
+      isHomeConnected={isHomeConnected}
+      onOpenConnectHome={handleOpenConnectHome}
+    >
+      <main
+        className="flex-1 flex items-center justify-center py-12 px-4"
+        role="main"
+        aria-labelledby="support-title"
+      >
+        <div className="w-full max-w-4xl">
+          <SupportCard />
+        </div>
+      </main>
+    </MainLayout>
   );
 }

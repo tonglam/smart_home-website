@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -9,7 +7,7 @@ import {
 import Link from "next/link";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 
-export function SupportButton() {
+export function SupportLink() {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -18,8 +16,9 @@ export function SupportButton() {
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full transition-colors hover:bg-muted"
+            aria-label="Get help and support"
           >
-            <IoMdHelpCircleOutline className="h-5 w-5" />
+            <IoMdHelpCircleOutline className="h-5 w-5" aria-hidden="true" />
           </Button>
         </Link>
       </TooltipTrigger>
