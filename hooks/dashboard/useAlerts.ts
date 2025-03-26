@@ -10,26 +10,37 @@ export function useAlerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [lastFetched, setLastFetched] = useState(0);
 
-  const fetchAlerts = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const homeId = user?.publicMetadata?.homeId as string;
-      if (!homeId) {
-        setAlerts([]);
+  const fetchAlerts = useCallback(
+    async (force = false) => {
+      // Skip if we fetched recently (within 10 seconds) and not forced
+      const now = Date.now();
+      if (!force && now - lastFetched < 10000) {
         return;
       }
-      const response = await getCriticalAlerts(homeId);
-      setAlerts(response);
-      setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err : new Error("Failed to fetch alerts")
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.publicMetadata?.homeId]);
+
+      try {
+        setIsLoading(true);
+        const homeId = user?.publicMetadata?.homeId as string;
+        if (!homeId) {
+          setAlerts([]);
+          return;
+        }
+        const response = await getCriticalAlerts(homeId);
+        setAlerts(response);
+        setError(null);
+        setLastFetched(now);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch alerts")
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user?.publicMetadata?.homeId, lastFetched]
+  );
 
   const handleDismiss = useCallback(async (alertId: string) => {
     try {
@@ -67,8 +78,10 @@ export function useAlerts() {
   );
 
   useEffect(() => {
-    fetchAlerts();
-    const interval = setInterval(fetchAlerts, 30000); // Poll every 30 seconds
+    fetchAlerts(true); // Force initial fetch
+
+    // Reduce polling frequency to every minute instead of every 30 seconds
+    const interval = setInterval(() => fetchAlerts(), 60000);
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
@@ -78,6 +91,6 @@ export function useAlerts() {
     error,
     dismissAlert: handleDismiss,
     addAlert,
-    refetch: fetchAlerts,
+    refetch: () => fetchAlerts(true), // Force refresh when explicitly called
   };
 }

@@ -3,6 +3,7 @@
 import * as db from "@/lib/db";
 import { ApiEventLog, DbEventLog } from "@/lib/types/db.types";
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
 class EventOperationError extends Error {
   constructor(message: string, public readonly code: string) {
@@ -18,50 +19,51 @@ function transformEventToApi(event: DbEventLog): ApiEventLog {
   };
 }
 
-export async function getRecentEvents(
-  homeId: string,
-  limit = 50
-): Promise<ApiEventLog[]> {
-  try {
-    const events = await db.getEvents(homeId, limit);
-    return events.map(transformEventToApi);
-  } catch (error) {
-    console.error("Failed to fetch recent events:", error);
-    throw new EventOperationError(
-      "Unable to fetch events. Please try again later.",
-      "FETCH_ERROR"
-    );
-  }
-}
-
-export async function getDeviceEvents(
-  homeId: string,
-  deviceId: string,
-  limit = 20
-): Promise<ApiEventLog[]> {
-  try {
-    // First verify the device belongs to the home
-    const device = await db.getDeviceById(deviceId);
-    if (!device || device.home_id !== homeId) {
+export const getRecentEvents = cache(
+  async (homeId: string, limit = 50): Promise<ApiEventLog[]> => {
+    try {
+      const events = await db.getEvents(homeId, limit);
+      return events.map(transformEventToApi);
+    } catch (error) {
+      console.error("Failed to fetch recent events:", error);
       throw new EventOperationError(
-        "Device not found or unauthorized",
-        "NOT_FOUND"
+        "Unable to fetch events. Please try again later.",
+        "FETCH_ERROR"
       );
     }
-
-    const events = await db.getDeviceEvents(deviceId, limit);
-    return events.map(transformEventToApi);
-  } catch (error) {
-    console.error("Failed to fetch device events:", error);
-    if (error instanceof EventOperationError) {
-      throw error;
-    }
-    throw new EventOperationError(
-      "Failed to fetch device events. Please try again later.",
-      "FETCH_ERROR"
-    );
   }
-}
+);
+
+export const getDeviceEvents = cache(
+  async (
+    homeId: string,
+    deviceId: string,
+    limit = 20
+  ): Promise<ApiEventLog[]> => {
+    try {
+      // First verify the device belongs to the home
+      const device = await db.getDeviceById(deviceId);
+      if (!device || device.home_id !== homeId) {
+        throw new EventOperationError(
+          "Device not found or unauthorized",
+          "NOT_FOUND"
+        );
+      }
+
+      const events = await db.getDeviceEvents(deviceId, limit);
+      return events.map(transformEventToApi);
+    } catch (error) {
+      console.error("Failed to fetch device events:", error);
+      if (error instanceof EventOperationError) {
+        throw error;
+      }
+      throw new EventOperationError(
+        "Failed to fetch device events. Please try again later.",
+        "FETCH_ERROR"
+      );
+    }
+  }
+);
 
 export async function logDeviceEvent(
   homeId: string,

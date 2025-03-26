@@ -8,6 +8,7 @@ import {
   DbEventLog,
 } from "@/lib/types/db.types";
 import { formatDateTime, formatRelativeTime } from "@/lib/utils/date.util";
+import { cache } from "react";
 import { Activity, EVENT_TYPE_MAPPING } from "./types";
 export type { Activity };
 
@@ -77,27 +78,27 @@ async function alertToActivity(alert: ApiAlertLog): Promise<Activity> {
   };
 }
 
-export async function getRecentActivities(
-  homeId: string,
-  limit = 50
-): Promise<Activity[]> {
-  try {
-    // Only fetch events, not alerts
-    const rawEvents = await db.getEvents(homeId, limit);
-    const events = rawEvents.map(transformEventToApi);
-    const eventActivities = await Promise.all(events.map(eventToActivity));
+// Cache the getRecentActivities function
+export const getRecentActivities = cache(
+  async (homeId: string, limit = 50): Promise<Activity[]> => {
+    try {
+      // Only fetch events, not alerts
+      const rawEvents = await db.getEvents(homeId, limit);
+      const events = rawEvents.map(transformEventToApi);
+      const eventActivities = await Promise.all(events.map(eventToActivity));
 
-    // Sort by timestamp
-    eventActivities.sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
+      // Sort by timestamp
+      eventActivities.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
 
-    return eventActivities.slice(0, limit);
-  } catch (error) {
-    return [];
+      return eventActivities.slice(0, limit);
+    } catch (error) {
+      return [];
+    }
   }
-}
+);
 
 // Get activities for a specific device
 export async function getDeviceActivities(

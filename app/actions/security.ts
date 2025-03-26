@@ -2,45 +2,66 @@
 
 import * as db from "@/lib/db";
 import { DbDevice } from "@/lib/types/db.types";
+import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
-export type SecurityPoint = {
+export interface SecurityPoint {
   id: string;
   name: string;
   type: string;
   status: string;
-  lastActivity: string;
-};
+  lastUpdated: string;
+  icon: "door" | "window" | "device";
+}
 
-export async function getSecurityPoints(
-  homeId: string
-): Promise<SecurityPoint[]> {
-  try {
-    // Get security devices directly from SQL
-    const securityDevices = await db.getSecurityDevices(homeId);
-
-    // Get the latest events for these devices to determine their current status
-    const securityPoints: SecurityPoint[] = await Promise.all(
-      securityDevices.map(async (device: DbDevice) => {
-        const events = await db.getDeviceEvents(device.id, 1);
-        const latestEvent = events[0];
-
-        return {
-          id: device.id,
-          name: device.name,
-          type: device.type,
-          status: latestEvent?.new_state || device.current_state || "unknown",
-          lastActivity:
-            latestEvent?.created_at ||
-            device.last_updated ||
-            device.created_at ||
-            new Date().toISOString(),
-        };
-      })
-    );
-
-    return securityPoints;
-  } catch (error) {
-    console.error("[getSecurityPoints] Error fetching security points:", error);
-    return [];
+export const getSecurityPoints = cache(
+  async (homeId: string): Promise<SecurityPoint[]> => {
+    try {
+      const securityDevices = await db.getSecurityDevices(homeId);
+      return securityDevices.map(deviceToSecurityPoint);
+    } catch (error) {
+      console.error("Error in getSecurityPoints:", error);
+      return [];
+    }
   }
+);
+
+export async function updateSecurityDeviceStatus(
+  deviceId: string,
+  newStatus: string
+): Promise<boolean> {
+  try {
+    const result = await db.updateDevice(deviceId, {
+      current_state: newStatus,
+    });
+
+    if (result.success) {
+      // If successful, revalidate any paths that show security data
+      revalidatePath("/");
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Error updating security device status:", error);
+    return false;
+  }
+}
+
+function deviceToSecurityPoint(device: DbDevice): SecurityPoint {
+  return {
+    id: device.id,
+    name: device.name,
+    type: device.type,
+    status: device.current_state || "unknown",
+    lastUpdated:
+      device.last_updated || device.created_at || new Date().toISOString(),
+    icon: determineIcon(device.type),
+  };
+}
+
+function determineIcon(type: string): "door" | "window" | "device" {
+  if (type.includes("door")) return "door";
+  if (type.includes("window")) return "window";
+  return "device";
 }

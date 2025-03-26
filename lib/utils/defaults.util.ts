@@ -10,30 +10,27 @@ export const automationModes = [
     id: "away",
     name: "Away Mode",
     icon: "Home",
+    active: false,
     description: "Secure your home when you're away",
   },
   {
     id: "movie",
     name: "Movie Mode",
     icon: "Film",
+    active: false,
     description: "Perfect lighting for movie time",
   },
   {
     id: "learning",
     name: "Learning Mode",
     icon: "BookOpen",
+    active: false,
     description: "Optimal settings for study and focus",
   },
 ] as const;
 
 // Type for base automation mode
 export type AutomationMode = (typeof automationModes)[number];
-
-// Extended automation modes with active state
-export const defaultAutomationModes = automationModes.map((mode) => ({
-  ...mode,
-  active: false,
-}));
 
 // Type for automation mode with active state
 export type ActiveAutomationMode = {

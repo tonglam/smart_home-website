@@ -1,3 +1,5 @@
+import type { DashboardData } from "./MainDashboard";
+
 /**
  * Available tab values for the dashboard navigation
  */
@@ -35,6 +37,8 @@ export interface DashboardTabsProps {
   onTabChange?: (tab: TabValue) => void;
   /** Whether to persist tab selection in localStorage (defaults to true) */
   persistTab?: boolean;
+  /** Initial dashboard data for server-side rendering */
+  initialData?: DashboardData;
 }
 
 /**

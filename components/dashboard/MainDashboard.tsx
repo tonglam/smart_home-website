@@ -12,6 +12,53 @@ import { MainLayout } from "@/components/layout";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 
+// Define interface for dashboard data
+export interface DashboardData {
+  devices: {
+    id: string;
+    name: string;
+    type: string;
+    home_id: string;
+    current_state?: string;
+    created_at?: string;
+    last_updated?: string;
+  }[];
+  lightDevices: {
+    id: string;
+    name: string;
+    type: string;
+    home_id: string;
+    current_state?: string;
+    created_at?: string;
+    last_updated?: string;
+  }[];
+  alerts: {
+    id: string;
+    type: "warning" | "info" | "error";
+    message: string;
+    timestamp: string;
+    deviceId?: string;
+    deviceName?: string;
+  }[];
+  events: {
+    id: number | string;
+    home_id: string;
+    device_id?: string;
+    event_type: string;
+    old_state?: string;
+    new_state?: string;
+    created_at: string;
+  }[];
+  securityPoints: {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    lastUpdated: string;
+    icon: "door" | "window" | "device";
+  }[];
+}
+
 // LoadingState component for better reusability
 const LoadingState = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
@@ -24,10 +71,12 @@ const DashboardMainContent = ({
   isHomeConnected,
   isLoading,
   homeId,
+  initialData,
 }: {
   isHomeConnected: boolean;
   isLoading: boolean;
   homeId?: string;
+  initialData?: DashboardData;
 }) => {
   return (
     <main
@@ -35,14 +84,23 @@ const DashboardMainContent = ({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
         <UserWelcomeBanner />
-        <MainTabs />
-        {homeId && <DeviceActivityFeed homeId={homeId} />}
+        <MainTabs initialData={initialData} />
+        {homeId && (
+          <DeviceActivityFeed
+            homeId={homeId}
+            initialEvents={initialData?.events}
+          />
+        )}
       </div>
     </main>
   );
 };
 
-export function MainDashboard() {
+interface MainDashboardProps {
+  initialData?: DashboardData;
+}
+
+export function MainDashboard({ initialData }: MainDashboardProps) {
   const { user, isLoaded, isSignedIn } = useUser();
   const { openSignIn } = useClerk();
   const [isHomeConnected, setIsHomeConnected] = useState(false);
@@ -142,6 +200,7 @@ export function MainDashboard() {
             isHomeConnected={isHomeConnected}
             isLoading={isLoading}
             homeId={getCurrentHomeId()}
+            initialData={initialData}
           />
         </div>
       </main>

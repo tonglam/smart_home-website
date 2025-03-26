@@ -6,7 +6,7 @@ alwaysApply: true
 ## Core Principles
 - **Keep It Simple:** Use a functional approach—no OOP patterns.
 - **Functional Components Only:** Write all UI elements as functional React components.
-- **Free Quota Compliance:** Ensure API calls, database operations, and MQTT usage stay within Cloudflare’s free tier limits.
+- **Free Quota Compliance:** Ensure API calls, database operations, and MQTT usage stay within Cloudflare's free tier limits.
 - When you start the app, you should check is port 3000 us occupiedl if so, kill it first.
 
 ## Tech Stack
@@ -32,6 +32,8 @@ alwaysApply: true
 - **Database Operations:** 
   - Use lightweight functions for D1 queries (`lib/db.util.ts`).
   - Optimize queries to minimize Cloudflare free-tier usage.
+  - Select only necessary columns in SQL queries instead of using SELECT *.
+  - Add cache headers to database API requests.
 
 - **MQTT Messaging:** 
   - Implement functions for publishing and consuming MQTT messages (`lib/mqtt.util.ts`).
@@ -41,6 +43,7 @@ alwaysApply: true
   - Define API handlers in `app/api/`.
   - Use **Server Actions** for database interactions.
   - Fetch client-side data with `useEffect` or `useSWR` when necessary.
+  - Create batch API endpoints for related data to reduce HTTP requests.
 
 ## Configuration & Environment
 - **Environment Variables:** Store sensitive settings (DB credentials, MQTT broker info) in `.env`.
@@ -56,3 +59,11 @@ alwaysApply: true
   - Minimize client-side rendering for better performance.
   - Avoid unnecessary API calls with caching strategies.
   - Use **Server Actions** for efficient, secure data mutations.
+  - Add React's `cache()` function to server actions for automatic caching.
+  - Implement proper `revalidatePath()` calls in all data mutations.
+  - Use Next.js's static generation with appropriate revalidation periods.
+  - Always implement consistent loading states with Skeleton components.
+  - Reduce client-side polling frequency to minimize API requests.
+  - Use local timestamp checking to prevent redundant data fetching.
+  - Create suspense boundaries with proper fallback UI components.
+  - Balance data fetching on server vs. client based on needs.

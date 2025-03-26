@@ -2,6 +2,8 @@
 
 import * as db from "@/lib/db";
 import { automationModes } from "@/lib/utils/defaults.util";
+import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
 export type AutomationMode = {
   id: string;
@@ -11,28 +13,29 @@ export type AutomationMode = {
   description: string;
 };
 
-export async function getAutomationModes(
-  homeId: string
-): Promise<AutomationMode[]> {
-  try {
-    // Get all lights to determine active mode
-    const lights = await db.getDevices(homeId);
-    const lightDevices = lights.filter((device) => device.type === "light");
+// Cache the getAutomationModes function
+export const getAutomationModes = cache(
+  async (homeId: string): Promise<AutomationMode[]> => {
+    try {
+      // Get all lights to determine active mode
+      const lights = await db.getDevices(homeId);
+      const lightDevices = lights.filter((device) => device.type === "light");
 
-    // Return modes with active state based on lights
-    return automationModes.map((mode) => ({
-      ...mode,
-      active: lightDevices.some((light) => light.mode === mode.id),
-    }));
-  } catch (error) {
-    console.error("Error fetching automation modes:", error);
-    // Return modes with no active states in case of error
-    return automationModes.map((mode) => ({
-      ...mode,
-      active: false,
-    }));
+      // Return modes with active state based on lights
+      return automationModes.map((mode) => ({
+        ...mode,
+        active: lightDevices.some((light) => light.mode === mode.id),
+      }));
+    } catch (error) {
+      console.error("Error fetching automation modes:", error);
+      // Return modes with no active states in case of error
+      return automationModes.map((mode) => ({
+        ...mode,
+        active: false,
+      }));
+    }
   }
-}
+);
 
 export async function toggleAutomationMode(
   homeId: string,
@@ -81,6 +84,11 @@ export async function toggleAutomationMode(
     });
 
     await Promise.all(updatePromises);
+
+    // Revalidate paths that display automation information
+    revalidatePath("/dashboard");
+    revalidatePath("/");
+
     return true;
   } catch (error) {
     console.error("Error toggling automation mode:", error);

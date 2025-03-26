@@ -8,7 +8,8 @@ interface SecurityPointProps {
   name: string;
   type: string;
   status: string;
-  lastActivity: string;
+  lastUpdated: string;
+  icon: "door" | "window" | "device";
 }
 
 export function SecurityPoint({ name, type, status }: SecurityPointProps) {

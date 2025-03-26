@@ -65,8 +65,15 @@ async function executeD1Query<T = unknown>(
       headers: {
         Authorization: `Bearer ${config.apiToken}`,
         "Content-Type": "application/json",
+        // Add cache-control headers to encourage caching at Cloudflare edge
+        "Cache-Control": "public, max-age=10", // Cache for 10 seconds
       },
       body: JSON.stringify({ sql, params }),
+      // Enable caching for GET requests to reduce load
+      cache: "force-cache",
+      next: {
+        revalidate: 10, // Revalidate every 10 seconds
+      },
     }
   );
 
@@ -85,7 +92,10 @@ async function executeD1Query<T = unknown>(
 export async function getDevices(homeId: string): Promise<Device[]> {
   try {
     return await executeD1Query<Device>(
-      "SELECT * FROM devices WHERE home_id = ? ORDER BY created_at DESC",
+      `SELECT id, name, type, home_id, current_state, created_at, last_updated 
+       FROM devices 
+       WHERE home_id = ? 
+       ORDER BY created_at DESC`,
       [homeId]
     );
   } catch (error) {
@@ -97,7 +107,8 @@ export async function getDevices(homeId: string): Promise<Device[]> {
 export async function getSecurityDevices(homeId: string): Promise<Device[]> {
   try {
     return await executeD1Query<Device>(
-      `SELECT * FROM devices 
+      `SELECT id, name, type, home_id, current_state, created_at, last_updated 
+       FROM devices 
        WHERE home_id = ? 
        AND type IN ('door_sensor', 'window_sensor') 
        ORDER BY created_at DESC`,
@@ -219,10 +230,17 @@ export async function getEvents(
   limit = 50
 ): Promise<EventLog[]> {
   try {
+    // Select only necessary columns instead of all columns
     return await executeD1Query<EventLog>(
-      `SELECT event_log.*, devices.name as device_name 
+      `SELECT 
+         event_log.id, 
+         event_log.home_id,
+         event_log.device_id, 
+         event_log.event_type, 
+         event_log.old_state, 
+         event_log.new_state, 
+         event_log.created_at
        FROM event_log 
-       LEFT JOIN devices ON event_log.device_id = devices.id 
        WHERE event_log.home_id = ? 
        AND event_log.created_at >= datetime('now', '-24 hours')
        ORDER BY event_log.created_at DESC 
@@ -284,7 +302,9 @@ export async function getAlerts(
 ): Promise<AlertLog[]> {
   try {
     return await executeD1Query<AlertLog>(
-      `SELECT alert_log.*, devices.name as device_name 
+      `SELECT alert_log.id, alert_log.home_id, alert_log.device_id, 
+              alert_log.message, alert_log.sent_status, alert_log.created_at,
+              devices.name as device_name
        FROM alert_log 
        LEFT JOIN devices ON alert_log.device_id = devices.id 
        WHERE alert_log.home_id = ? 

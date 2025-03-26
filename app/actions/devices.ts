@@ -3,6 +3,7 @@
 import * as db from "@/lib/db";
 import { ApiDevice, DbDevice } from "@/lib/types/db.types";
 import { revalidatePath } from "next/cache";
+import { cache } from "react";
 
 // Error class for device operations
 class DeviceOperationError extends Error {
@@ -21,22 +22,21 @@ function transformDeviceToApi(device: DbDevice): ApiDevice {
   };
 }
 
-export async function getDevicesByType(
-  homeId: string,
-  type: string
-): Promise<ApiDevice[]> {
-  try {
-    const devices = await db.getDevices(homeId);
-    const filteredDevices = devices.filter((device) => device.type === type);
-    return filteredDevices.map(transformDeviceToApi);
-  } catch (error) {
-    console.error("Failed to fetch devices by type:", error);
-    throw new DeviceOperationError(
-      "Unable to fetch devices. Please try again later.",
-      "FETCH_ERROR"
-    );
+export const getDevicesByType = cache(
+  async (homeId: string, type: string): Promise<ApiDevice[]> => {
+    try {
+      const devices = await db.getDevices(homeId);
+      const filteredDevices = devices.filter((device) => device.type === type);
+      return filteredDevices.map(transformDeviceToApi);
+    } catch (error) {
+      console.error("Failed to fetch devices by type:", error);
+      throw new DeviceOperationError(
+        "Unable to fetch devices. Please try again later.",
+        "FETCH_ERROR"
+      );
+    }
   }
-}
+);
 
 export async function updateDeviceState(
   deviceId: string,
