@@ -2,11 +2,12 @@
 
 import { UserCard as OptimizedUserCard } from "@/components/profile";
 
-interface UserCardProps {
+export interface UserCardProps {
   name: string;
   email: string;
   imageUrl?: string;
   onSignOut: () => void;
+  onEmailChange: (email: string) => Promise<void>;
 }
 
 export function UserCard(props: UserCardProps) {

@@ -1,16 +1,11 @@
 "use client";
 
-import { UserCard } from "@/components/profile";
-import { useUser } from "@clerk/nextjs";
+import { UserCard } from "@/components/profile/UserCard";
+import { useClerk, useUser } from "@clerk/nextjs";
 
-// Props interface
-interface ClerkUserAdapterProps {
-  onSignOut: () => void;
-}
-
-// Main component
-export function ClerkUserAdapter({ onSignOut }: ClerkUserAdapterProps) {
+export function ClerkUserAdapter() {
   const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
 
   if (!isSignedIn || !user) {
     return null;
@@ -26,12 +21,21 @@ export function ClerkUserAdapter({ onSignOut }: ClerkUserAdapterProps) {
   // Get email from user data
   const userEmail = user.primaryEmailAddress?.emailAddress || "";
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const handleEmailChange = async (newEmail: string) => {
+    console.warn("Email change not implemented:", newEmail);
+  };
+
   return (
     <UserCard
       name={userName}
       email={userEmail}
       imageUrl={user.imageUrl}
-      onSignOut={onSignOut}
+      onSignOut={handleSignOut}
+      onEmailChange={handleEmailChange}
     />
   );
 }

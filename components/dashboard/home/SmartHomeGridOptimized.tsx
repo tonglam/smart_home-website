@@ -1,67 +1,60 @@
 "use client";
 
-import { getDevices } from "@/app/actions/devices";
-import { Card } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-
-interface Device {
-  id: string;
-  name: string;
-  type: string;
-  status: "online" | "offline";
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { securityPoints } from "@/lib/data";
+import { useUser } from "@clerk/nextjs";
+import { Shield, Wand2 } from "lucide-react";
+import { useAutomation } from "../hooks/useAutomation";
+import { LightingSection } from "./LightingSection";
+import { AutomationMode } from "./ui/AutomationMode";
+import { SecurityPoint } from "./ui/SecurityPoint";
 
 export function SmartHomeGridOptimized() {
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        const data = (await getDevices()) as Device[];
-        setDevices(data);
-      } catch (error) {
-        console.error("Error fetching devices:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDevices();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i} className="p-4 animate-pulse">
-            <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-            <div className="h-3 bg-muted rounded w-1/2" />
-          </Card>
-        ))}
-      </div>
-    );
-  }
+  const { isSignedIn } = useUser();
+  const { modes, toggleMode, toggleInfo } = useAutomation();
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {devices.map((device: Device) => (
-        <Card key={device.id} className="p-4">
-          <h3 className="font-medium">{device.name}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{device.type}</p>
-          <div className="mt-4">
-            <span
-              className={`px-2 py-1 rounded-full text-xs ${
-                device.status === "online"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {device.status}
-            </span>
-          </div>
-        </Card>
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Lighting Section */}
+      <div className="order-1">
+        <LightingSection isConnected={!!isSignedIn} />
+      </div>
+
+      {/* Automation Section */}
+      <Card className="p-4 sm:p-6 order-2">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg font-medium">
+            <Wand2 className="h-5 w-5" />
+            Automation
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {modes.map((mode) => (
+            <AutomationMode
+              key={mode.id}
+              {...mode}
+              isConnected={!!isSignedIn}
+              onToggleMode={() => toggleMode(mode.id)}
+              onToggleInfo={() => toggleInfo(mode.id)}
+            />
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Security Section */}
+      <Card className="p-4 sm:p-6 order-3">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg font-medium">
+            <Shield className="h-5 w-5" />
+            Security
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {securityPoints.map((point) => (
+            <SecurityPoint key={point.id} {...point} />
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

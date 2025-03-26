@@ -6,7 +6,7 @@ import ConnectHomeDialog from "@/components/ConnectHomeDialog";
 import { Footer } from "@/components/Footer";
 import { HomeConnectionPrompt } from "@/components/HomeConnectionPrompt";
 import { MainTabs } from "@/components/MainTabs";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/navigation/Navbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WelcomeBanner } from "@/components/WelcomeBanner";
 import { useClerk, useUser } from "@clerk/nextjs";
@@ -39,7 +39,7 @@ const MainContent = ({
 // UserHomeConnection component to manage home connection state and logic
 export const MainDashboard = () => {
   const { user, isLoaded } = useUser();
-  const { signOut, openSignIn } = useClerk();
+  const { openSignIn } = useClerk();
   const [isHomeConnected, setIsHomeConnected] = useState(false);
   const [showConnectHome, setShowConnectHome] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,11 +90,6 @@ export const MainDashboard = () => {
 
   const handleSignIn = () => {
     openSignIn();
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    setIsHomeConnected(false);
   };
 
   const handleHomeConnect = async (homeId: string) => {
@@ -148,8 +143,6 @@ export const MainDashboard = () => {
         <Navbar
           isSignedIn={!!user?.id}
           isHomeConnected={isHomeConnected}
-          onSignIn={handleSignIn}
-          onSignOut={handleSignOut}
           onOpenConnectHome={handleOpenConnectHome}
         />
 

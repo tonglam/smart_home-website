@@ -1,8 +1,9 @@
 "use client";
 
-import { getRecentActivities } from "@/app/actions/activities";
+import { Activity, getRecentActivities } from "@/app/actions/activities";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import {
@@ -11,7 +12,6 @@ import {
   HiClock,
   HiExclamationCircle,
 } from "react-icons/hi";
-import type { Activity } from "./types";
 
 // Activity item component
 const ActivityItem = ({ activity }: { activity: Activity }) => (
@@ -20,22 +20,18 @@ const ActivityItem = ({ activity }: { activity: Activity }) => (
       <HiClock className="h-5 w-5 text-primary" />
     </div>
     <div className="flex-1 space-y-1">
-      <p className="text-sm font-medium">{activity.title}</p>
-      <p className="text-sm text-muted-foreground">{activity.description}</p>
+      <p className="text-sm font-medium">{activity.target}</p>
+      <p className="text-sm text-muted-foreground">{activity.action}</p>
       <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
-      {activity.severity && (
-        <span
-          className={`inline-block px-2 py-0.5 text-xs rounded-full ${
-            activity.severity === "high"
-              ? "bg-red-100 text-red-800"
-              : activity.severity === "medium"
-              ? "bg-yellow-100 text-yellow-800"
-              : "bg-blue-100 text-blue-800"
-          }`}
-        >
-          {activity.severity}
-        </span>
-      )}
+      <span
+        className={cn("inline-block px-2 py-0.5 text-xs rounded-full", {
+          "bg-red-100 text-red-800": activity.status === "error",
+          "bg-yellow-100 text-yellow-800": activity.status === "warning",
+          "bg-blue-100 text-blue-800": activity.status === "success",
+        })}
+      >
+        {activity.status}
+      </span>
     </div>
   </div>
 );
@@ -118,8 +114,6 @@ export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
     fetchActivities();
   }, []);
 
-  const displayedActivities = isExpanded ? activities : activities.slice(0, 3);
-
   if (isLoading) {
     return <Card className={cn("animate-pulse h-48", className)} />;
   }
@@ -146,11 +140,15 @@ export function DeviceActivityFeed({ className }: DeviceActivityFeedProps) {
         onToggleExpand={() => setIsExpanded(!isExpanded)}
         isExpanded={isExpanded}
       />
-      <div className="divide-y">
-        {displayedActivities.map((activity) => (
-          <ActivityItem key={activity.id} activity={activity} />
-        ))}
-      </div>
+      <Collapsible open={isExpanded}>
+        <CollapsibleContent>
+          <div className="divide-y">
+            {activities.map((activity) => (
+              <ActivityItem key={activity.id} activity={activity} />
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }

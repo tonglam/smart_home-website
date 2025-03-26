@@ -1,39 +1,58 @@
 "use server";
 
-import { Activity } from "@/components/dashboard/activities/types";
+export interface Activity {
+  id: string;
+  type: "device" | "security" | "system";
+  action: string;
+  target: string;
+  timestamp: string;
+  status: "success" | "warning" | "error";
+}
 
 export async function getRecentActivities(): Promise<Activity[]> {
   // Mock data for now
-  return [
+  const mockActivities: Activity[] = [
     {
       id: "1",
-      title: "Front Door Unlocked",
-      description: "Front door was unlocked via smart lock",
-      timestamp: "2 minutes ago",
-      type: "security",
-      severity: "low",
+      type: "device",
+      action: "turned on",
+      target: "Living Room Light",
+      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
+      status: "success",
     },
     {
       id: "2",
-      title: "Motion Detected",
-      description: "Motion detected in backyard",
-      timestamp: "15 minutes ago",
       type: "security",
-      severity: "medium",
+      action: "detected motion",
+      target: "Front Door Camera",
+      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
+      status: "warning",
     },
     {
       id: "3",
-      title: "Temperature Adjusted",
-      description: "Living room temperature set to 72°F",
-      timestamp: "1 hour ago",
-      type: "device",
+      type: "system",
+      action: "firmware update",
+      target: "Smart Hub",
+      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
+      status: "success",
     },
     {
       id: "4",
-      title: "Night Mode Activated",
-      description: "Home automation switched to night mode",
-      timestamp: "3 hours ago",
-      type: "automation",
+      type: "device",
+      action: "failed to respond",
+      target: "Garage Door",
+      timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 minutes ago
+      status: "error",
+    },
+    {
+      id: "5",
+      type: "security",
+      action: "armed",
+      target: "Home Security System",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
+      status: "success",
     },
   ];
+
+  return mockActivities;
 }

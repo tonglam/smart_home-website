@@ -1,19 +1,16 @@
 "use client";
 
 import { updateUserHomeId } from "@/app/actions/user";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  ConnectButton,
+  DialogHeaderContent,
+  DisconnectButton,
+  HomeIdInput,
+} from "./components";
 
 // Props for the ConnectionDialog component
 interface ConnectionDialogProps {
@@ -22,84 +19,6 @@ interface ConnectionDialogProps {
   onConnect: (homeId: string) => void;
   currentHomeId?: string;
 }
-
-// DialogHeader component
-const DialogHeaderContent = ({ currentHomeId }: { currentHomeId?: string }) => (
-  <DialogHeader>
-    <DialogTitle>
-      {currentHomeId ? "Update Home Connection" : "Connect Your Smart Home"}
-    </DialogTitle>
-    <DialogDescription id="connect-home-description">
-      {currentHomeId
-        ? "Update your home ID to connect to a different smart home system."
-        : "Enter your home ID to connect and manage your smart home devices."}
-    </DialogDescription>
-  </DialogHeader>
-);
-
-// HomeIdInput component
-const HomeIdInput = ({
-  homeId,
-  setHomeId,
-  isConnecting,
-}: {
-  homeId: string;
-  setHomeId: (value: string) => void;
-  isConnecting: boolean;
-}) => (
-  <div className="space-y-2">
-    <Label htmlFor="homeId">Home ID</Label>
-    <Input
-      id="homeId"
-      placeholder="Enter your home ID"
-      value={homeId}
-      onChange={(e) => setHomeId(e.target.value)}
-      disabled={isConnecting}
-    />
-  </div>
-);
-
-// ConnectButton component
-const ConnectButton = ({
-  homeId,
-  currentHomeId,
-  isConnecting,
-}: {
-  homeId: string;
-  currentHomeId?: string;
-  isConnecting: boolean;
-}) => (
-  <Button
-    type="submit"
-    className="w-full"
-    disabled={!homeId || isConnecting || homeId === currentHomeId}
-  >
-    {isConnecting
-      ? "Connecting..."
-      : currentHomeId
-      ? "Update Connection"
-      : "Connect Home"}
-  </Button>
-);
-
-// DisconnectButton component
-const DisconnectButton = ({
-  isConnecting,
-  onClick,
-}: {
-  isConnecting: boolean;
-  onClick: () => void;
-}) => (
-  <Button
-    type="button"
-    variant="destructive"
-    className="w-full mt-2"
-    onClick={onClick}
-    disabled={isConnecting}
-  >
-    {isConnecting ? "Disconnecting..." : "Disconnect Home"}
-  </Button>
-);
 
 // Main ConnectionDialog component
 export function ConnectionDialog({
@@ -204,32 +123,32 @@ export function ConnectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="connect-home-description">
-        <DialogHeaderContent currentHomeId={currentHomeId} />
+      <DialogContent>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleConnect();
           }}
         >
-          <div className="space-y-4">
+          <DialogHeaderContent currentHomeId={currentHomeId} />
+          <div className="py-6">
             <HomeIdInput
               homeId={homeId}
               setHomeId={setHomeId}
               isConnecting={isConnecting}
             />
-            <ConnectButton
-              homeId={homeId}
-              currentHomeId={currentHomeId}
-              isConnecting={isConnecting}
-            />
-            {currentHomeId && (
-              <DisconnectButton
-                isConnecting={isConnecting}
-                onClick={handleDisconnect}
-              />
-            )}
           </div>
+          <ConnectButton
+            homeId={homeId}
+            currentHomeId={currentHomeId}
+            isConnecting={isConnecting}
+          />
+          {currentHomeId && (
+            <DisconnectButton
+              isConnecting={isConnecting}
+              onClick={handleDisconnect}
+            />
+          )}
         </form>
       </DialogContent>
     </Dialog>
