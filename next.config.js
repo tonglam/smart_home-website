@@ -36,6 +36,15 @@ const nextConfig = {
       static: 300, // 5 minutes
     },
   },
+  webpack: (config, { isServer }) => {
+    // This will make webpack case sensitive
+    config.module.rules.push({
+      test: /\.(js|jsx|ts|tsx)$/,
+      enforce: "pre",
+      use: ["case-sensitive-paths-webpack-plugin"],
+    });
+    return config;
+  },
 };
 
 module.exports = nextConfig;

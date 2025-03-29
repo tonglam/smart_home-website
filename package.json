@@ -91,6 +91,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
+    "case-sensitive-paths-webpack-plugin": "^2.4.0",
     "cssnano": "^7.0.6",
     "drizzle-kit": "^0.30.6",
     "eslint": "^9.23.0",
