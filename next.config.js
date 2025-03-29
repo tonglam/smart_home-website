@@ -3,6 +3,18 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    // Configure cache invalidation periods
+    staleTimes: {
+      // For dynamic routes (like our API endpoints)
+      dynamic: 30, // 30 seconds
+      // For static routes (like dashboard, profile)
+      static: 300, // 5 minutes
+    },
+    // Enable experimental support for TypeScript path mapping
+    typedRoutes: true,
+    tsconfigPaths: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -26,24 +38,6 @@ const nextConfig = {
         hostname: "qitonglan.com",
       },
     ],
-  },
-  experimental: {
-    // Configure cache invalidation periods
-    staleTimes: {
-      // For dynamic routes (like our API endpoints)
-      dynamic: 30, // 30 seconds
-      // For static routes (like dashboard, profile)
-      static: 300, // 5 minutes
-    },
-  },
-  webpack: (config, { isServer }) => {
-    // This will make webpack case sensitive
-    config.module.rules.push({
-      test: /\.(js|jsx|ts|tsx)$/,
-      enforce: "pre",
-      use: ["case-sensitive-paths-webpack-plugin"],
-    });
-    return config;
   },
 };
 
