@@ -58,7 +58,9 @@ function ErrorFallback() {
     try {
       await signOut();
     } finally {
-      router.push("/signin");
+      // @ts-ignore // TODO: Investigate why Typed Routes causes an issue here
+      // The line below uses 'as any' to bypass a persistent build error with Typed Routes.
+      router.push("/signin" as any);
     }
   };
 

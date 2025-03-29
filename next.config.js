@@ -13,7 +13,6 @@ const nextConfig = {
     },
     // Enable experimental support for TypeScript path mapping
     typedRoutes: true,
-    tsconfigPaths: true,
   },
   images: {
     remotePatterns: [

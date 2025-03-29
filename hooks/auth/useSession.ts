@@ -38,7 +38,7 @@ export function useSession(): SessionState {
       toast.error("Failed to refresh session", {
         description: "Please try signing in again.",
       });
-      router.push("/signin");
+      router.push("/signin" as any);
     }
   }, [refreshSession, router, updateLastActivity]);
 
@@ -75,7 +75,7 @@ export function useSession(): SessionState {
       toast.error("Your session has expired", {
         description: "Please sign in again to continue.",
       });
-      router.push("/signin");
+      router.push("/signin" as any);
     }
   }, [isSignedIn, lastActivity, showWarning, handleRefreshSession, router]);
 
