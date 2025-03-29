@@ -71,3 +71,37 @@ export function formatDateTimeFull(date: string | Date): string {
     hour12: true,
   }).format(targetDate);
 }
+
+/**
+ * Format a date to relative and full format
+ * @returns Object containing relative time (e.g., "2 hours ago") and full datetime
+ */
+export function formatTimeAgo(timestamp: string): {
+  relative: string;
+  full: string;
+} {
+  try {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      return { relative: "Invalid date", full: "Invalid date" };
+    }
+    return {
+      relative: formatRelativeTime(date),
+      full: formatDateTimeFull(date),
+    };
+  } catch (error) {
+    console.error(`Error formatting date: ${timestamp}`, error);
+    return { relative: "Invalid date", full: "Invalid date" };
+  }
+}
+
+/**
+ * Get a time-appropriate greeting based on the current hour
+ * @returns "Good morning" (12am-11:59am), "Good afternoon" (12pm-5:59pm), or "Good evening" (6pm-11:59pm)
+ */
+export function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}

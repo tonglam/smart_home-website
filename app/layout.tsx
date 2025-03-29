@@ -1,10 +1,19 @@
-import { Toaster } from "@/components/ui/toaster";
+import { AuthErrorBoundary } from "@/components/auth/AuthErrorBoundary";
+import { AuthNavigationProvider } from "@/components/auth/AuthNavigationContext";
+import { Layout } from "@/components/layout/Layout";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
-// Font configuration
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffffff",
+};
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -12,26 +21,19 @@ const inter = Inter({
   adjustFontFallback: true,
 });
 
-// Metadata configuration
 export const metadata: Metadata = {
   title: "Smart Home System",
-  description: "Monitor and control your smart home devices",
+  description: "Your connected home management platform",
+  authors: [{ name: "Qitong Lan" }],
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
-    apple: { url: "/logo.svg", type: "image/svg+xml" },
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    shortcut: [{ url: "/favicon.svg" }],
+  },
+  other: {
+    logo: "/logo.svg",
   },
 };
-
-// Auth provider component to wrap the application
-const AuthProvider = ({ children }: { children: React.ReactNode }) => (
-  <ClerkProvider
-    signInFallbackRedirectUrl="/"
-    signInUrl="/signin"
-    signUpUrl="/signup"
-  >
-    {children}
-  </ClerkProvider>
-);
 
 export default function RootLayout({
   children,
@@ -39,13 +41,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          {children}
-          <Toaster />
-        </body>
-      </html>
-    </AuthProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <ClerkProvider>
+          <AuthNavigationProvider>
+            <AuthErrorBoundary>
+              <TooltipProvider>
+                <Layout>{children}</Layout>
+                <Toaster
+                  richColors
+                  position="top-right"
+                  closeButton
+                  theme="dark"
+                  duration={2000}
+                />
+              </TooltipProvider>
+            </AuthErrorBoundary>
+          </AuthNavigationProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

@@ -1,26 +1,37 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
+import { AuthNavigationState } from "@/types/hook.types";
 import { useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "./useAuth";
 
-export function useNavigation() {
-  const { user, isLoaded } = useUser();
-  const { signOut, openSignIn } = useClerk();
-  const isSignedIn = isLoaded && !!user;
-  const isHomeConnected = isLoaded ? !!user?.publicMetadata?.homeId : false;
+export function useAuthNavigation(): AuthNavigationState {
+  const { isLoaded, isSignedIn, isHomeConnected, homeId } = useAuth();
   const [showConnectHome, setShowConnectHome] = useState(false);
 
-  const handleSignIn = () => openSignIn();
-  const handleSignOut = () => signOut();
-  const handleOpenConnectHome = () => isSignedIn && setShowConnectHome(true);
+  const openConnectHome = () => {
+    if (!isSignedIn) {
+      toast.error("Please sign in to connect your home");
+      return;
+    }
+    setShowConnectHome(true);
+  };
+
+  const closeConnectHome = () => {
+    setShowConnectHome(false);
+  };
 
   return {
+    isLoaded,
     isSignedIn,
     isHomeConnected,
+    homeId,
+
+    // Home connection UI state
     showConnectHome,
-    setShowConnectHome,
-    handleSignIn,
-    handleSignOut,
-    handleOpenConnectHome,
-  };
+
+    // Actions
+    openConnectHome,
+    closeConnectHome,
+  } as const;
 }

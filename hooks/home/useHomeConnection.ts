@@ -1,52 +1,83 @@
-import { updateUserHomeId } from "@/app/actions/user";
+import { updateUserHomeId } from "@/app/actions/user/user.action";
+import { type UseHomeConnectionReturn } from "@/types/hook.types";
 import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useState } from "react";
 
 interface UseHomeConnectionProps {
-  onConnect: (homeId: string) => void;
   onOpenChange: (open: boolean) => void;
-  currentHomeId?: string;
   open: boolean;
+  initialHomeId?: string | null;
 }
 
+/**
+ * Hook to manage smart home connection state and actions
+ * @param props - Connection props including callbacks and state
+ * @returns Connection state and handlers
+ */
 export function useHomeConnection({
-  onConnect,
   onOpenChange,
-  currentHomeId,
   open,
-}: UseHomeConnectionProps) {
-  const { isSignedIn, user } = useUser();
-  const [homeId, setHomeId] = useState<string>(currentHomeId || "");
+  initialHomeId,
+}: UseHomeConnectionProps): UseHomeConnectionReturn {
+  const { user, isLoaded } = useUser();
+  const [currentHomeId, setCurrentHomeId] = useState<string>(
+    initialHomeId || ""
+  );
   const [isConnecting, setIsConnecting] = useState(false);
 
-  // Reset state when dialog opens
-  useEffect(() => {
-    if (open) {
-      setHomeId(currentHomeId || "");
-    }
-  }, [open, currentHomeId]);
+  const revalidateConnection = useCallback(async () => {
+    if (!user) return;
 
-  // Reset state when dialog closes
+    try {
+      const updatedUser = await user.reload();
+      const homeId = updatedUser.publicMetadata.homeId as string;
+      if (homeId !== currentHomeId) {
+        setCurrentHomeId(homeId || "");
+      }
+    } catch (error) {
+      console.error("Error revalidating connection:", error);
+    }
+  }, [user, currentHomeId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onFocus = () => {
+      revalidateConnection();
+    };
+
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [revalidateConnection]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onOnline = () => {
+      revalidateConnection();
+    };
+
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [revalidateConnection]);
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      const homeId = user.publicMetadata.homeId as string;
+      if (homeId && !currentHomeId) {
+        setCurrentHomeId(homeId);
+      }
+    }
+  }, [isLoaded, user, currentHomeId]);
+
   useEffect(() => {
     if (!open) {
-      setHomeId("");
       setIsConnecting(false);
     }
   }, [open]);
 
-  const handleConnect = async () => {
-    if (!isSignedIn || !user) {
-      toast.error("Please sign in to connect your home", {
-        description: "Authentication is required for this action",
-      });
-      return;
-    }
-
-    if (!homeId) {
-      toast.error("Please enter a home ID", {
-        description: "Home ID is required for this action",
-      });
+  const handleConnect = async (homeId: string) => {
+    if (!user) {
       return;
     }
 
@@ -54,32 +85,28 @@ export function useHomeConnection({
 
     try {
       const result = await updateUserHomeId(user.id, homeId);
+
       if (result.success) {
-        toast.success("Home connected successfully", {
-          description: "You can now manage your smart home devices",
-        });
-        onConnect(homeId);
+        setCurrentHomeId(homeId);
         onOpenChange(false);
+        // Force reload to ensure fresh data
+        window.location.reload();
       } else {
-        toast.error("Failed to connect home", {
-          description: "Please try again later",
-        });
+        console.error(
+          "[handleConnect] Server action returned non-success:",
+          result
+        );
+        throw new Error(result.error || "Failed to connect home");
       }
     } catch (error) {
-      console.error("Error connecting home:", error);
-      toast.error("Failed to connect home", {
-        description: "An unexpected error occurred. Please try again later",
-      });
+      console.error("[handleConnect] Error connecting home:", error);
     } finally {
       setIsConnecting(false);
     }
   };
 
   const handleDisconnect = async () => {
-    if (!isSignedIn || !user) {
-      toast.error("Please sign in to disconnect your home", {
-        description: "Authentication is required for this action",
-      });
+    if (!user) {
       return;
     }
 
@@ -87,31 +114,26 @@ export function useHomeConnection({
 
     try {
       const result = await updateUserHomeId(user.id, "");
+
       if (result.success) {
-        toast.success("Home disconnected successfully", {
-          description: "Your home has been disconnected from your account",
-        });
-        onConnect("");
+        setCurrentHomeId("");
         onOpenChange(false);
+        // Force reload to ensure fresh data
+        window.location.reload();
       } else {
-        toast.error("Failed to disconnect home", {
-          description: "Please try again later",
-        });
+        throw new Error(result.error || "Failed to disconnect home");
       }
     } catch (error) {
-      console.error("Error disconnecting home:", error);
-      toast.error("Failed to disconnect home", {
-        description: "An unexpected error occurred. Please try again later",
-      });
+      console.error("[handleDisconnect] Error disconnecting home:", error);
     } finally {
       setIsConnecting(false);
     }
   };
 
   return {
-    homeId,
-    setHomeId,
+    currentHomeId,
     isConnecting,
+    isLoaded,
     handleConnect,
     handleDisconnect,
   };

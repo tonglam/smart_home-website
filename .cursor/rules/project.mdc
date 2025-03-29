@@ -11,7 +11,7 @@ alwaysApply: true
 
 ## Tech Stack
 - **Frontend:** Next.js (App Router) + Tailwind CSS + ShadCN/UI for a modern, fast UI.
-- **Database:** Cloudflare D1 for data persistence.
+- **Database:** Supabase pg for data persistence.
 - **Messaging:** MQTT for real-time communication (publish & consume).
 - **API:** Next.js Server Actions and API routes (`app/api/`).
 
@@ -30,10 +30,9 @@ alwaysApply: true
 
 ## State & Data Handling
 - **Database Operations:** 
-  - Use lightweight functions for D1 queries (`lib/db.util.ts`).
-  - Optimize queries to minimize Cloudflare free-tier usage.
+  - Use lightweight functions for DB queries [db.ts](mdc:db/db.ts).
+  - Optimize queries to minimize Supabase free-tier usage.
   - Select only necessary columns in SQL queries instead of using SELECT *.
-  - Add cache headers to database API requests.
 
 - **MQTT Messaging:** 
   - Implement functions for publishing and consuming MQTT messages (`lib/mqtt.util.ts`).
@@ -48,7 +47,6 @@ alwaysApply: true
 ## Configuration & Environment
 - **Environment Variables:** Store sensitive settings (DB credentials, MQTT broker info) in `.env`.
 - **Cloudflare Free Tier Consideration:** Optimize queries, reduce MQTT message frequency, and cache results where possible.
-- **Cloudflare D1**: Cloudfare D1 db was created remotely, the db named `smart_home_hub_test`, id is `35efce62-75ea-49af-b4ed-f5cd48052ac8`, with data. The app should always connect to this remote D1 db. Use the `--remote` flag to access the remote database
 
 ## Best Practices
 - **Minimal Dependencies:** Use only essential packages to keep performance high.

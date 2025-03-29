@@ -5,7 +5,7 @@ import * as React from "react";
 import { DayPicker } from "react-day-picker";
 
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -54,21 +54,17 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: IconLeft,
-        IconRight: IconRight,
+        Chevron: ({ orientation }) =>
+          orientation === "left" ? (
+            <ChevronLeft className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          ),
       }}
       {...props}
     />
   );
 }
 Calendar.displayName = "Calendar";
-
-function IconLeft() {
-  return <ChevronLeft className="h-4 w-4" />;
-}
-
-function IconRight() {
-  return <ChevronRight className="h-4 w-4" />;
-}
 
 export { Calendar };

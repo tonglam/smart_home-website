@@ -1,1 +1,0 @@
-export { ClerkUserAdapter } from "./ClerkUserAdapter";

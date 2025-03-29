@@ -13,7 +13,6 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.clerk.accounts.dev",
       },
-      // Add any other image domains you need
       {
         protocol: "https",
         hostname: "images.unsplash.com",
@@ -22,7 +21,20 @@ const nextConfig = {
         protocol: "https",
         hostname: "smart-home-hub.qitonglan.com",
       },
+      {
+        protocol: "https",
+        hostname: "qitonglan.com",
+      },
     ],
+  },
+  experimental: {
+    // Configure cache invalidation periods
+    staleTimes: {
+      // For dynamic routes (like our API endpoints)
+      dynamic: 30, // 30 seconds
+      // For static routes (like dashboard, profile)
+      static: 300, // 5 minutes
+    },
   },
 };
 

@@ -1,3 +1,10 @@
+// Email configuration defaults
+export const EMAIL_DEFAULTS = {
+  FROM_EMAIL: "onboarding@resend.dev", // Resend's test email
+  TEST_EMAIL: "qitonglan@gmail.com", // Verified email for testing
+  REPLY_TO: "onboarding@resend.dev",
+} as const;
+
 // Default values for smart home settings
 
 // Default lighting values
@@ -28,15 +35,3 @@ export const automationModes = [
     description: "Optimal settings for study and focus",
   },
 ] as const;
-
-// Type for base automation mode
-export type AutomationMode = (typeof automationModes)[number];
-
-// Type for automation mode with active state
-export type ActiveAutomationMode = {
-  readonly id: AutomationMode["id"];
-  readonly name: AutomationMode["name"];
-  readonly icon: AutomationMode["icon"];
-  readonly description: AutomationMode["description"];
-  readonly active: boolean;
-};

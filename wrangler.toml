@@ -1,7 +1,0 @@
-name = "smart-home-website"
-compatibility_date = "2024-03-26"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "smart_home_hub_test"
-database_id = "35efce62-75ea-49af-b4ed-f5cd48052ac8" 

@@ -1,6 +1,5 @@
-// This will now be a server component
-import { MainDashboard } from "@/components/dashboard";
+import { redirect } from "next/navigation";
 
-export default function Dashboard() {
-  return <MainDashboard />;
+export default function HomePage() {
+  redirect("/dashboard");
 }

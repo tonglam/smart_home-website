@@ -1,168 +1,70 @@
 "use client";
 
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import type { HTMLAttributes } from "react";
-import { memo, useCallback, useEffect, useRef } from "react";
-import type { TabNavigationProps, TabValue } from "../types";
+import { cn } from "@/lib/utils/utils";
+import type { TabValue } from "@/types/dashboard.types";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-interface TabItem {
-  value: TabValue;
-  label: string;
-  description: string;
-  shortcut: string;
+export function DashboardTabNavigation() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentTab = (searchParams.get("tab") as TabValue) || "overview";
+  const [isChangingTab, setIsChangingTab] = useState(false);
+  const [loadingTab, setLoadingTab] = useState<TabValue | null>(null);
+
+  const handleTabChange = (value: TabValue) => {
+    if (value === currentTab) return;
+
+    setIsChangingTab(true);
+    setLoadingTab(value);
+
+    const params = new URLSearchParams(searchParams);
+    params.set("tab", value);
+    router.push(`?${params.toString()}`);
+
+    // Reset loading state after navigation is likely complete
+    setTimeout(() => {
+      setIsChangingTab(false);
+      setLoadingTab(null);
+    }, 1000); // Adjust timing as needed
+  };
+
+  return (
+    <TabsList
+      className="grid w-full grid-cols-3"
+      role="tablist"
+      aria-label="Dashboard navigation"
+    >
+      {[
+        { value: "overview" as TabValue, label: "Overview" },
+        { value: "monitoring" as TabValue, label: "Monitoring" },
+        { value: "analytics" as TabValue, label: "Analytics" },
+      ].map((tab) => (
+        <TabsTrigger
+          key={tab.value}
+          value={tab.value}
+          onClick={() => handleTabChange(tab.value)}
+          className={cn(
+            "relative overflow-hidden",
+            "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+            "transition-all duration-300 ease-in-out",
+            loadingTab === tab.value &&
+              "after:absolute after:inset-x-0 after:bottom-0 after:h-[2px]",
+            loadingTab === tab.value &&
+              "after:bg-gradient-to-r after:from-primary/40 after:via-primary after:to-primary/40",
+            loadingTab === tab.value && "after:animate-progress-indeterminate",
+            isChangingTab && tab.value !== loadingTab && "opacity-50"
+          )}
+          disabled={isChangingTab}
+        >
+          {tab.label}
+          {loadingTab === tab.value && (
+            <span className="absolute top-0 left-0 right-0 h-full bg-primary/5 animate-pulse" />
+          )}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  );
 }
-
-const TAB_ITEMS: readonly TabItem[] = [
-  {
-    value: "overview",
-    label: "Overview",
-    description: "View all connected devices and their status",
-    shortcut: "Alt+1",
-  },
-  {
-    value: "monitoring",
-    label: "Monitoring",
-    description: "Monitor device performance and health",
-    shortcut: "Alt+2",
-  },
-  {
-    value: "analytics",
-    label: "Analytics",
-    description: "View analytics and insights about your devices",
-    shortcut: "Alt+3",
-  },
-] as const;
-
-/**
- * TabNavigation component for managing tab selection and keyboard navigation
- */
-export const TabNavigation = memo(
-  ({
-    currentTab,
-    onTabChange,
-    className,
-    ...props
-  }: TabNavigationProps &
-    Omit<
-      HTMLAttributes<HTMLDivElement>,
-      keyof TabNavigationProps
-    >): JSX.Element => {
-    const tabsRef = useRef<HTMLDivElement>(null);
-
-    const handleTabSwitch = useCallback(
-      (tab: Element) => {
-        const value = tab.getAttribute("data-value");
-        if (value && onTabChange) {
-          onTabChange(value as TabValue);
-          requestAnimationFrame(() => {
-            (tab as HTMLElement).focus();
-          });
-        }
-      },
-      [onTabChange]
-    );
-
-    const handleKeyDown = useCallback(
-      (event: React.KeyboardEvent<HTMLDivElement>) => {
-        const tabs = Array.from(
-          tabsRef.current?.querySelectorAll('[role="tab"]') || []
-        );
-        const currentIndex = tabs.findIndex(
-          (tab) => tab.getAttribute("data-value") === currentTab
-        );
-
-        // Handle keyboard shortcuts (Alt + number)
-        if (event.altKey && /^[1-3]$/.test(event.key)) {
-          event.preventDefault();
-          const index = parseInt(event.key, 10) - 1;
-          const tab = tabs[index];
-          if (tab) handleTabSwitch(tab);
-          return;
-        }
-
-        switch (event.key) {
-          case "ArrowLeft":
-          case "ArrowUp": {
-            event.preventDefault();
-            const prevIndex =
-              currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
-            const prevTab = tabs[prevIndex];
-            if (prevTab) handleTabSwitch(prevTab);
-            break;
-          }
-          case "ArrowRight":
-          case "ArrowDown": {
-            event.preventDefault();
-            const nextIndex =
-              currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
-            const nextTab = tabs[nextIndex];
-            if (nextTab) handleTabSwitch(nextTab);
-            break;
-          }
-          case "Home": {
-            event.preventDefault();
-            const firstTab = tabs[0];
-            if (firstTab) handleTabSwitch(firstTab);
-            break;
-          }
-          case "End": {
-            event.preventDefault();
-            const lastTab = tabs[tabs.length - 1];
-            if (lastTab) handleTabSwitch(lastTab);
-            break;
-          }
-        }
-      },
-      [currentTab, handleTabSwitch]
-    );
-
-    // Focus management
-    useEffect(() => {
-      const tabsElement = tabsRef.current;
-      if (!tabsElement) return;
-
-      const currentTabElement = tabsElement.querySelector(
-        `[data-value="${currentTab}"]`
-      );
-      if (currentTabElement && document.activeElement !== currentTabElement) {
-        requestAnimationFrame(() => {
-          (currentTabElement as HTMLElement).focus();
-        });
-      }
-    }, [currentTab]);
-
-    return (
-      <TabsList
-        ref={tabsRef}
-        className={cn("grid w-full grid-cols-3", className)}
-        onKeyDown={handleKeyDown}
-        role="tablist"
-        aria-label="Dashboard navigation"
-        {...props}
-      >
-        {TAB_ITEMS.map(({ value, label, description, shortcut }) => (
-          <TabsTrigger
-            key={value}
-            value={value}
-            className={cn(
-              "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
-              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-              "transition-colors duration-200"
-            )}
-            role="tab"
-            aria-selected={currentTab === value}
-            aria-controls={`${value}-content`}
-            id={`${value}-tab`}
-            tabIndex={currentTab === value ? 0 : -1}
-            aria-label={`${description} (${shortcut})`}
-          >
-            {label}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    );
-  }
-);
-
-TabNavigation.displayName = "TabNavigation";

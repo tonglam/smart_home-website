@@ -1,91 +1,63 @@
 "use client";
 
-import { sendContactEmail } from "@/app/actions/email";
-import { Button } from "@/components/ui/button";
+import { sendContactEmail } from "@/app/actions/support/email.action";
+import { ContractFormHeader } from "@/components/support/form/fields/ContractFormHeader";
+import { DescriptionField } from "@/components/support/form/fields/input/DescriptionField";
+import { FullNameField } from "@/components/support/form/fields/input/NameField";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { contactFormSchema, type ContactFormData } from "@/lib/schemas/contact";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useState } from "react";
-import { useForm } from "react-hook-form";
-import { FaExclamationCircle } from "react-icons/fa";
-import { toast } from "sonner";
 import {
-  DescriptionField,
-  EmailField,
-  FormHeader,
-  FullNameField,
-  PhoneField,
-  PriorityField,
-  SubjectField,
-} from "./fields";
+  contactFormSchema,
+  type ContactFormData,
+} from "@/schemas/contact.schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { ContractFormActions } from "./fields/ContractFormActions";
+import { EmailField } from "./fields/input/EmailField";
+import { PhoneField } from "./fields/input/PhoneField";
+import { PriorityField } from "./fields/input/PriorityField";
+import { SubjectField } from "./fields/input/SubjectField";
 
-interface ContactFormProps {
-  onSubmitSuccess?: () => void;
-  className?: string;
-}
-
-const FormActions = ({ isSubmitting }: { isSubmitting: boolean }) => (
-  <div className="flex flex-col gap-4">
-    <Button type="submit" className="w-full" disabled={isSubmitting}>
-      {isSubmitting ? "Sending Report..." : "Send Report"}
-    </Button>
-
-    <div className="text-sm text-muted-foreground">
-      <p className="flex items-center gap-2">
-        <FaExclamationCircle className="h-4 w-4" aria-hidden="true" />
-        <span>All fields marked with * are required</span>
-      </p>
-    </div>
-  </div>
-);
-
-export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
+export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "",
       subject: "",
-      priority: "medium",
+      priority: "low",
       description: "",
     },
   });
 
-  const onSubmit = useCallback(
-    async (values: ContactFormData) => {
-      if (isSubmitting) return;
-
+  const onSubmit = async (data: ContactFormData) => {
+    try {
       setIsSubmitting(true);
-      try {
-        await sendContactEmail(values);
-        toast.success("Your report has been submitted successfully", {
-          description: "We'll get back to you within 24-48 hours.",
-          duration: 5000,
-        });
+      const result = await sendContactEmail(data);
+
+      if (result.success) {
+        toast.success(
+          "Message sent successfully! Check your email for confirmation."
+        );
         form.reset();
-        onSubmitSuccess?.();
-      } catch (error) {
-        console.error("Failed to submit form:", error);
-        toast.error("Failed to submit report", {
-          description: "Please try again or contact support directly.",
-          duration: 7000,
-        });
-      } finally {
-        setIsSubmitting(false);
+      } else {
+        throw new Error("Failed to send message");
       }
-    },
-    [form, onSubmitSuccess, isSubmitting]
-  );
+    } catch (error) {
+      toast.error("Failed to send message. Please try again.");
+      console.error("Form submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <Card className={className}>
+    <Card>
       <div className="space-y-6 p-6">
-        <FormHeader />
-
+        <ContractFormHeader />
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -101,10 +73,9 @@ export function ContactForm({ onSubmitSuccess, className }: ContactFormProps) {
               <PhoneField form={form} />
               <PriorityField form={form} />
             </div>
-
             <SubjectField form={form} />
             <DescriptionField form={form} />
-            <FormActions isSubmitting={isSubmitting} />
+            <ContractFormActions isSubmitting={isSubmitting} />
           </form>
         </Form>
       </div>
