@@ -5,7 +5,7 @@ import { MainNavLogo } from "@/components/navigation/main/MainNavLogo";
 import { MobileNav } from "@/components/navigation/mobile/MobileNav";
 import { UserNav } from "@/components/navigation/profile/UserNav";
 
-export function MainNav() {
+export function NavBar() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav

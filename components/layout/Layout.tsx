@@ -1,5 +1,5 @@
 import { Footer } from "@/components/layout/footer/Footer";
-import { MainNav } from "@/components/navigation/NavBar";
+import { NavBar } from "@/components/navigation/NavBar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,7 +8,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   return (
     <div className="relative min-h-screen flex flex-col">
-      <MainNav />
+      <NavBar />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
