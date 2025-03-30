@@ -28,19 +28,42 @@ interface RawData {
  * Fetches raw dashboard data using the db.ts data access layer
  */
 export const fetchData = async (homeId: string): Promise<RawData> => {
+  console.log(`[Data:Dashboard] Starting fetchData for homeId: ${homeId}`);
+  const startTime = Date.now();
   try {
-    // db functions now return data directly or throw errors
+    console.time(`[Data:Dashboard] DB fetchDevicesByHomeId ${homeId}`);
+    const devicesPromise = fetchDevicesByHomeId(homeId);
+
+    console.time(`[Data:Dashboard] DB fetchRecentHomeEvents ${homeId}`);
+    const eventsPromise = fetchRecentHomeEvents(homeId);
+
+    console.time(`[Data:Dashboard] DB fetchAlertsByHomeId ${homeId}`);
+    const alertsPromise = fetchAlertsByHomeId(homeId);
+
+    // Await all promises concurrently
     const [devices, events, alerts] = await Promise.all([
-      fetchDevicesByHomeId(homeId),
-      fetchRecentHomeEvents(homeId),
-      fetchAlertsByHomeId(homeId),
+      devicesPromise,
+      eventsPromise,
+      alertsPromise,
     ]);
 
-    // If any promise rejects, the catch block below will handle it.
+    // Log end times after Promise.all resolves
+    console.timeEnd(`[Data:Dashboard] DB fetchDevicesByHomeId ${homeId}`);
+    console.timeEnd(`[Data:Dashboard] DB fetchRecentHomeEvents ${homeId}`);
+    console.timeEnd(`[Data:Dashboard] DB fetchAlertsByHomeId ${homeId}`);
+
+    const endTime = Date.now();
+    console.log(
+      `[Data:Dashboard] Finished fetchData for homeId: ${homeId}. Found ${devices.length} devices, ${events.length} events, ${alerts.length} alerts. Total time: ${endTime - startTime}ms`
+    );
 
     return { devices, events, alerts };
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
+    const endTime = Date.now();
+    console.error(
+      `[Data:Dashboard] Error in fetchData for homeId: ${homeId} after ${endTime - startTime}ms`,
+      error
+    );
     // Re-throw or return default/empty state depending on requirements
     throw new Error(
       `Failed to fetch dashboard data: ${error instanceof Error ? error.message : String(error)}`
@@ -131,9 +154,14 @@ export const transformData = (
   homeId: string,
   userDisplayName: string
 ): DashboardData => {
+  console.log(
+    `[Data:Dashboard] Starting transformData for homeId: ${homeId}. Received ${rawData.devices.length} devices, ${rawData.events.length} events, ${rawData.alerts.length} alerts.`
+  );
+  const startTime = Date.now();
+
   const { devices, events, alerts } = rawData;
 
-  // deveice name mapping
+  // device name mapping
   const deviceNameMap = devices.reduce(
     (acc, device) => {
       acc[device.id] = device.name;
@@ -152,7 +180,7 @@ export const transformData = (
   const currentMode =
     automationModes.find((mode) => mode.id === deviceMode)?.id || "";
 
-  // ecurity points data
+  // security points data
   const securityPointsData = devices
     .filter((device) => {
       const type = getSecurityPointType(device);
@@ -170,7 +198,7 @@ export const transformData = (
     transformToAlert(alert, deviceNameMap)
   );
 
-  return {
+  const transformedData = {
     lightDevices: lightDevicesData,
     automationModes: [...automationModes],
     currentMode,
@@ -180,6 +208,13 @@ export const transformData = (
     homeId,
     userDisplayName,
   };
+
+  const endTime = Date.now();
+  console.log(
+    `[Data:Dashboard] Finished transformData for homeId: ${homeId}. Total time: ${endTime - startTime}ms`
+  );
+
+  return transformedData;
 };
 
 /**

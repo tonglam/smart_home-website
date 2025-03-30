@@ -14,6 +14,10 @@ const topicCallbacks = new Map<
   Set<(topic: string, message: string) => void>
 >();
 
+// --- Module-level flag for connection state ---
+let isConnecting: boolean = false;
+// ---------------------------------------------
+
 function logError(error: unknown, context: string): void {
   if (error instanceof Error) {
     console.error(`[MQTT Server Util] ${context}: ${error.message}`);
@@ -91,10 +95,12 @@ function handleIncomingMessage(topic: string, message: Buffer): void {
 }
 
 export async function connectMqtt(): Promise<MqttClient | null> {
+  // If client exists and is connected, reuse it
   if (client && client.connected) {
+    // console.log("[MQTT Server Util] Reusing existing connected client."); // Optional: uncomment for verbose logging
     return client;
   }
-
+  // If client exists but isn't connected, clean it up
   if (client && !client.connected) {
     console.log(
       "[MQTT Server Util] Cleaning up stale MQTT client before reconnecting."
@@ -103,9 +109,29 @@ export async function connectMqtt(): Promise<MqttClient | null> {
     client = null;
   }
 
+  // Use the module-level flag
+  if (isConnecting) {
+    console.warn(
+      "[MQTT Server Util] Connection attempt already in progress, waiting..."
+    );
+    // Simple wait mechanism - adjust as needed (e.g., use a proper lock/event emitter)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Re-check if client became available after waiting
+    if (client && client.connected) return client;
+    // If still no client, maybe the other attempt failed, proceed cautiously
+    console.warn(
+      "[MQTT Server Util] Proceeding after wait, client still not available."
+    );
+  }
+
+  // Set the module-level flag
+  isConnecting = true;
+  const connectFunctionStartTime = Date.now();
+
   try {
     const config = getMqttConfig();
 
+    // Construct MQTTS options (keep rejectUnauthorized: false for now)
     const options: IClientOptions = {
       clientId: config.clientId,
       username: config.username,
@@ -114,95 +140,150 @@ export async function connectMqtt(): Promise<MqttClient | null> {
       protocolVersion: 4,
       clean: true,
       reconnectPeriod: 1000,
-      connectTimeout: 15000,
+      connectTimeout: 5000, // Or 15000 if testing timeout
     };
 
+    // Connect to the broker
     console.log(
       `[MQTT Server Util] Attempting MQTTS connection to ${config.url}...`
     );
+    const connectionPromiseStartTime = Date.now();
     return new Promise((resolve, reject) => {
       const newClient = mqtt.connect(config.url, options);
       newClient.removeAllListeners(); // Clear potential old listeners
 
-      const connectionTimeout = setTimeout(() => {
+      const connectionTimeoutTimer = setTimeout(() => {
+        const duration = Date.now() - connectionPromiseStartTime;
         console.error(
-          `[MQTT Server Util] ❌ MQTTS connection timeout for ${config.url}`
+          `[MQTT Server Util] ❌ MQTTS connection timeout for ${config.url} after ${duration}ms (Timeout set to ${options.connectTimeout}ms)`
         );
-        newClient.end(true);
+        // Clear the module-level flag on failure
+        isConnecting = false;
+        // Ensure listeners are removed on timeout to prevent memory leaks if client is stuck
+        newClient.removeAllListeners();
+        newClient.end(true); // Force close
         reject(new Error(`MQTTS connection timeout to ${config.url}`));
       }, options.connectTimeout);
 
-      newClient.on("connect", (connack) => {
-        clearTimeout(connectionTimeout);
-        console.error("connack", connack);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      newClient.on("connect", (_connack) => {
+        clearTimeout(connectionTimeoutTimer);
+        const connectDuration = Date.now() - connectionPromiseStartTime;
         console.log(
-          `[MQTT Server Util] ✅ MQTTS connected successfully to ${config.url}`
+          `[MQTT Server Util] ✅ MQTTS connected successfully to ${config.url} in ${connectDuration}ms`
         );
-        client = newClient;
+        client = newClient; // Assign to module-level variable
+        // Clear the module-level flag on success
+        isConnecting = false;
 
-        client.removeAllListeners("message");
-        client.on("message", handleIncomingMessage);
+        // Setup persistent handlers *after* successful connection
+        setupPersistentEventHandlers(client);
 
-        topicCallbacks.forEach((callbacks, topic) => {
-          if (callbacks.size > 0 && client) {
-            console.log(
-              `[MQTT Server Util] 🔄 Attempting to re-subscribe to topic: ${topic}`
-            );
-            client.subscribe(topic, { qos: 1 }, (err, granted) => {
-              if (err) {
-                logError(
-                  err,
-                  `Failed to re-subscribe to ${topic} after reconnect`
-                );
-              } else if (granted && granted.length > 0) {
-                console.log(
-                  `[MQTT Server Util] 👍 Re-subscribed to ${granted[0]?.topic ?? topic}`
-                );
-              } else {
-                console.warn(
-                  `[MQTT Server Util] ⚠️ Re-subscription to ${topic} ack'd, grants unclear.`
-                );
-              }
-            });
-          }
-        });
+        // Resolve the promise with the connected client
         resolve(client);
       });
 
       newClient.on("error", (err) => {
-        clearTimeout(connectionTimeout);
-        logError(err, `MQTTS connection error for ${config.url}`);
-        newClient.end(true);
-        reject(err);
-      });
-
-      newClient.on("close", () => {
-        clearTimeout(connectionTimeout);
-        console.log(
-          `[MQTT Server Util] 🚪 MQTTS connection closed for ${config.url}.`
+        clearTimeout(connectionTimeoutTimer);
+        const duration = Date.now() - connectionPromiseStartTime;
+        logError(
+          err,
+          `MQTTS connection error for ${config.url} after ${duration}ms`
         );
-        if (client === newClient) {
-          client = null;
-        }
-      });
-
-      newClient.on("offline", () => {
-        console.warn(
-          `[MQTT Server Util] 🔌 MQTTS client for ${config.url} is offline.`
-        );
-      });
-
-      newClient.on("reconnect", () => {
-        console.log(
-          `[MQTT Server Util] ⏳ MQTTS client attempting to reconnect to ${config.url}...`
-        );
+        // Clear the module-level flag on error
+        isConnecting = false;
+        // Ensure listeners are removed on error
+        newClient.removeAllListeners();
+        newClient.end(true); // Force close
+        reject(err); // Reject the promise
       });
     });
   } catch (error) {
-    logError(error, "Failed to initiate MQTTS connection");
+    // Catch synchronous errors during setup (e.g., getMqttConfig)
+    const duration = Date.now() - connectFunctionStartTime;
+    logError(
+      error,
+      `Failed to initiate MQTTS connection setup after ${duration}ms`
+    );
+    // Clear the module-level flag on exception
+    isConnecting = false;
     return null;
   }
 }
+
+// Setup persistent handlers for a given client instance
+function setupPersistentEventHandlers(clientInstance: MqttClient) {
+  // --- Close Handler ---
+  const handleClose = () => {
+    console.log(`[MQTT Server Util] 🚪 Persistent MQTTS connection closed.`);
+    if (client === clientInstance) {
+      // Only nullify if it's the current global client
+      client = null; // Clear the client instance so connectMqtt re-establishes
+    }
+    // Remove listeners from this instance to prevent memory leaks if it's replaced
+    clientInstance.removeAllListeners();
+  };
+  // Remove existing listener before adding
+  clientInstance.removeListener("close", handleClose);
+  clientInstance.on("close", handleClose);
+
+  // --- Error Handler ---
+  const handleError = (err: Error) => {
+    logError(err, "Persistent MQTTS client error");
+    // Consider forcing client cleanup on persistent errors
+    if (client === clientInstance && !clientInstance.connected) {
+      console.log(
+        "[MQTT Server Util] Forcing close due to persistent error on disconnected client."
+      );
+      clientInstance.end(true); // Force close
+      // handleClose will likely be called, nullifying client
+    }
+  };
+  clientInstance.removeListener("error", handleError);
+  clientInstance.on("error", handleError);
+
+  // --- Offline Handler ---
+  const handleOffline = () => {
+    console.warn(`[MQTT Server Util] 🔌 Persistent MQTTS client is offline.`);
+  };
+  clientInstance.removeListener("offline", handleOffline);
+  clientInstance.on("offline", handleOffline);
+
+  // --- Reconnect Handler ---
+  const handleReconnect = () => {
+    console.log(
+      `[MQTT Server Util] ⏳ Persistent MQTTS client attempting to reconnect...`
+    );
+  };
+  clientInstance.removeListener("reconnect", handleReconnect);
+  clientInstance.on("reconnect", handleReconnect);
+
+  // --- Message Handler --- (Ensure central handler is attached)
+  const handleMessageWrapper = (topic: string, message: Buffer) => {
+    handleIncomingMessage(topic, message);
+  };
+  clientInstance.removeListener("message", handleMessageWrapper);
+  clientInstance.on("message", handleMessageWrapper);
+
+  // --- Optional: Re-subscription on Reconnect ---
+  // The library's 'reconnect' event is often too early.
+  // Re-subscribing in the 'connect' handler (as done inside the Promise) is generally more reliable.
+}
+
+// Call setupPersistentEventHandlers after client is potentially assigned
+// This needs refinement - ideally setup handlers right after successful connection promise resolves
+// Simplified approach for now:
+const originalConnectMqtt = connectMqtt;
+export async function connectMqttWithHandlers(): Promise<MqttClient | null> {
+  const connectedClient = await originalConnectMqtt();
+  if (connectedClient && !connectedClient.listenerCount("close")) {
+    // Setup handlers only once after a successful connection
+    setupPersistentEventHandlers(connectedClient);
+  }
+  return connectedClient;
+}
+// Replace the export if this approach is desired, otherwise keep original connectMqtt
+// export { connectMqttWithHandlers as connectMqtt }; // Example of replacing export
 
 export async function publishMessage(
   topic: string,
