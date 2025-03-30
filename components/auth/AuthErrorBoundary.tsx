@@ -1,8 +1,9 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { Component, ReactNode } from "react";
+import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -58,9 +59,8 @@ function ErrorFallback() {
     try {
       await signOut();
     } finally {
-      // @ts-ignore // TODO: Investigate why Typed Routes causes an issue here
-      // The line below uses 'as any' to bypass a persistent build error with Typed Routes.
-      router.push("/signin" as any);
+      // Using 'as Route' assertion to satisfy Typed Routes
+      router.push("/signin" as Route);
     }
   };
 
