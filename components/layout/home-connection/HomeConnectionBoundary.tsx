@@ -1,6 +1,6 @@
 "use client";
 
-import { HomeConnectSection } from "@/components/navigation/home-connection/HomeConnectSection";
+import { HomeConnectSection } from "@/components/nav/home-connection/HomeConnectSection";
 
 interface HomeConnectionBoundaryProps {
   initialHomeId: string | null;

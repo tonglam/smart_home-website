@@ -1,6 +1,6 @@
 "use client";
 
-import { EmailDialog } from "@/components/navigation/profile/email/EmailDialog";
+import { EmailDialog } from "@/components/nav/profile/email/EmailDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

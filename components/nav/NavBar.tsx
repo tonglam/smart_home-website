@@ -1,9 +1,9 @@
 "use client";
 
-import { MainNavLinks } from "@/components/navigation/main/MainNavLinks";
-import { MainNavLogo } from "@/components/navigation/main/MainNavLogo";
-import { MobileNav } from "@/components/navigation/mobile/MobileNav";
-import { UserNav } from "@/components/navigation/profile/UserNav";
+import { MainNavLinks } from "@/components/nav/main/MainNavLinks";
+import { MainNavLogo } from "@/components/nav/main/MainNavLogo";
+import { MobileNav } from "@/components/nav/mobile/MobileNav";
+import { UserNav } from "@/components/nav/profile/UserNav";
 
 export function NavBar() {
   return (

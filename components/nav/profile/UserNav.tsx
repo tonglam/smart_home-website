@@ -1,7 +1,7 @@
 "use client";
 
 import { updateUserEmail } from "@/app/actions/user/user.action";
-import { UserCard } from "@/components/navigation/profile/card/UserCard";
+import { UserCard } from "@/components/nav/profile/card/UserCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
