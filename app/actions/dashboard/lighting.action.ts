@@ -56,7 +56,7 @@ export async function updateLightState(
       await createEvent(eventLog);
     }
 
-    const mqttPayload = {
+    const payload = {
       homeId: homeId,
       type: "light",
       deviceId: deviceId,
@@ -67,10 +67,14 @@ export async function updateLightState(
       ...(updates.temperature !== undefined && {
         temperature: updates.temperature,
       }),
+      createdAt: new Date().toISOString(),
     };
 
     try {
-      await publishMessage(`device/${deviceId}/control`, mqttPayload);
+      const published = await publishMessage("control", payload);
+      if (!published) {
+        console.error("Failed to publish MQTT message for light update.");
+      }
     } catch (mqttError) {
       console.error("Error publishing MQTT message:", mqttError);
     }

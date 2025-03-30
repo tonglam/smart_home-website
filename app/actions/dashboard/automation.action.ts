@@ -69,6 +69,7 @@ export async function toggleAutomationMode(
       type: "automation",
       modeId: newModeValue,
       active: isActive,
+      createdAt: new Date().toISOString(),
     };
     try {
       const published = await publishMessage("control", payload);
