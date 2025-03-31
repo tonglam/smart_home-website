@@ -140,7 +140,7 @@ export async function connectMqtt(): Promise<MqttClient | null> {
       protocolVersion: 4,
       clean: true,
       reconnectPeriod: 1000,
-      connectTimeout: 5000, // Or 15000 if testing timeout
+      connectTimeout: 15000,
     };
 
     // Connect to the broker
