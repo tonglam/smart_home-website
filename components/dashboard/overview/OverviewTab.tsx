@@ -163,13 +163,6 @@ export function OverviewTab({
 
   return (
     <div className="space-y-6">
-      {/* Display live count */}
-      <div className="p-4 border rounded-lg bg-card text-card-foreground">
-        <p className="text-lg font-semibold">
-          Live Security Devices Count: {liveSecurityPoints.length}
-        </p>
-      </div>
-
       {/* Lighting and Automation - These are related as automation applies to lights */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Lighting Section - Takes 2/3 of space on larger screens */}
