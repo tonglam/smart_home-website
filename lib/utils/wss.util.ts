@@ -1,53 +1,54 @@
 import mqtt, { type IClientOptions, type MqttClient } from "mqtt";
 
-interface MqttConfig {
+interface WssConfig {
   url: string;
   clientId: string;
   username?: string;
   password?: string;
 }
 
-let client: MqttClient | null = null;
-const topicCallbacks = new Map<
+let wssClient: MqttClient | null = null;
+const wssTopicCallbacks = new Map<
   string,
   Set<(topic: string, message: string) => void>
 >();
 
-let isConnecting: boolean = false;
+let isWssConnecting: boolean = false;
 
 function logError(error: unknown, context: string): void {
   if (error instanceof Error) {
-    console.error(`[MQTT Server Util] ${context}: ${error.message}`);
+    console.error(`[WSS Util] ${context}: ${error.message}`);
   } else {
-    console.error(`[MQTT Server Util] ${context}: Unknown error`, error);
+    console.error(`[WSS Util] ${context}: Unknown error`, error);
   }
 }
 
-function getMqttConfig(): MqttConfig {
-  const clientId = `smart-home-server-${Math.random()
+function getWssConfig(): WssConfig {
+  const clientId = `smart-home-server-wss-${Math.random()
     .toString(16)
     .substring(2, 8)}`;
 
-  const mqttsPort = 8883;
+  const wssHostname = process.env.NEXT_PUBLIC_WSS_HOSTNAME;
+  const wssPort = 8884;
+  const wssPath = "/mqtt";
 
-  const hostname = process.env.MQTT_BROKER_URL;
-  const username = process.env.MQTT_USERNAME;
-  const password = process.env.MQTT_PASSWORD;
-  const port = mqttsPort;
+  const username = process.env.NEXT_PUBLIC_WSS_USERNAME;
+  const password = process.env.NEXT_PUBLIC_WSS_PASSWORD;
 
-  if (!hostname || !username || !password) {
-    const missingVars = _getMissingEnvVarNames({
-      hostname,
-      username,
-      password,
-    });
-    const errorMsg = `Missing Server-Side MQTT environment variables: ${missingVars.join(", ")}`;
-    console.error(`[MQTT Server Util] ${errorMsg}`);
+  const missingVars: string[] = [];
+  if (!wssHostname) missingVars.push("NEXT_PUBLIC_WSS_HOSTNAME");
+  if (!username) missingVars.push("NEXT_PUBLIC_WSS_USERNAME");
+  if (!password) missingVars.push("NEXT_PUBLIC_WSS_PASSWORD");
+
+  if (missingVars.length > 0) {
+    const errorMsg = `Missing WSS environment variables: ${missingVars.join(", ")}. Please ensure these are set.`;
+    console.error(`[WSS Util] ${errorMsg}`);
     throw new Error(errorMsg);
   }
 
-  const protocol = "mqtts";
-  const url = `${protocol}://${hostname}:${port}`;
+  const protocol = "wss";
+  const formattedPath = wssPath;
+  const url = `${protocol}://${wssHostname}:${wssPort}${formattedPath}`;
 
   return {
     url,
@@ -57,24 +58,8 @@ function getMqttConfig(): MqttConfig {
   };
 }
 
-function _getMissingEnvVarNames(vars: {
-  hostname?: string;
-  username?: string;
-  password?: string;
-}): string[] {
-  const required = {
-    MQTT_BROKER_URL: vars.hostname,
-    MQTT_USERNAME: vars.username,
-    MQTT_PASSWORD: vars.password,
-  };
-
-  return Object.entries(required)
-    .filter(([, value]) => !value)
-    .map(([key]) => key);
-}
-
 function handleIncomingMessage(topic: string, message: Buffer): void {
-  const callbacks = topicCallbacks.get(topic);
+  const callbacks = wssTopicCallbacks.get(topic);
   if (callbacks) {
     const messageString = message.toString();
     callbacks.forEach((callback) => {
@@ -87,25 +72,25 @@ function handleIncomingMessage(topic: string, message: Buffer): void {
   }
 }
 
-export async function connectMqtt(): Promise<MqttClient | null> {
-  if (client && client.connected) {
-    return client;
+export async function connectWss(): Promise<MqttClient | null> {
+  if (wssClient && wssClient.connected) {
+    return wssClient;
   }
-  if (client && !client.connected) {
-    client.end(true);
-    client = null;
+  if (wssClient && !wssClient.connected) {
+    wssClient.end(true);
+    wssClient = null;
   }
 
-  if (isConnecting) {
+  if (isWssConnecting) {
     await new Promise((resolve) => setTimeout(resolve, 500));
-    if (client && client.connected) return client;
+    if (wssClient && wssClient.connected) return wssClient;
   }
 
-  isConnecting = true;
+  isWssConnecting = true;
   const connectFunctionStartTime = Date.now();
 
   try {
-    const config = getMqttConfig();
+    const config = getWssConfig();
 
     const options: IClientOptions = {
       clientId: config.clientId,
@@ -117,6 +102,7 @@ export async function connectMqtt(): Promise<MqttClient | null> {
       reconnectPeriod: 1000,
       connectTimeout: 15000,
     };
+
     const connectionPromiseStartTime = Date.now();
     return new Promise((resolve, reject) => {
       const newClient = mqtt.connect(config.url, options);
@@ -125,23 +111,24 @@ export async function connectMqtt(): Promise<MqttClient | null> {
       const connectionTimeoutTimer = setTimeout(() => {
         const duration = Date.now() - connectionPromiseStartTime;
         console.error(
-          `[MQTT Server Util] ❌ MQTTS connection timeout for ${config.url} after ${duration}ms (Timeout set to ${options.connectTimeout}ms)`
+          `[WSS Util] ❌ WSS connection timeout for ${config.url} after ${duration}ms (Timeout set to ${options.connectTimeout}ms)`
         );
-        isConnecting = false;
+        isWssConnecting = false;
         newClient.removeAllListeners();
         newClient.end(true);
-        reject(new Error(`MQTTS connection timeout to ${config.url}`));
+        reject(new Error(`WSS connection timeout to ${config.url}`));
       }, options.connectTimeout);
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       newClient.on("connect", (_connack) => {
         clearTimeout(connectionTimeoutTimer);
-        client = newClient;
-        isConnecting = false;
+        const connectDuration = Date.now() - connectionPromiseStartTime;
+        wssClient = newClient;
+        isWssConnecting = false;
 
-        setupPersistentEventHandlers(client);
+        setupPersistentEventHandlers(wssClient);
 
-        resolve(client);
+        resolve(wssClient);
       });
 
       newClient.on("error", (err) => {
@@ -149,9 +136,9 @@ export async function connectMqtt(): Promise<MqttClient | null> {
         const duration = Date.now() - connectionPromiseStartTime;
         logError(
           err,
-          `MQTTS connection error for ${config.url} after ${duration}ms`
+          `WSS connection error for ${config.url} after ${duration}ms`
         );
-        isConnecting = false;
+        isWssConnecting = false;
         newClient.removeAllListeners();
         newClient.end(true);
         reject(err);
@@ -161,17 +148,17 @@ export async function connectMqtt(): Promise<MqttClient | null> {
     const duration = Date.now() - connectFunctionStartTime;
     logError(
       error,
-      `Failed to initiate MQTTS connection setup after ${duration}ms`
+      `Failed to initiate WSS connection setup after ${duration}ms`
     );
-    isConnecting = false;
+    isWssConnecting = false;
     return null;
   }
 }
 
 function setupPersistentEventHandlers(clientInstance: MqttClient) {
   const handleClose = () => {
-    if (client === clientInstance) {
-      client = null;
+    if (wssClient === clientInstance) {
+      wssClient = null;
     }
     clientInstance.removeAllListeners();
   };
@@ -179,8 +166,8 @@ function setupPersistentEventHandlers(clientInstance: MqttClient) {
   clientInstance.on("close", handleClose);
 
   const handleError = (err: Error) => {
-    logError(err, "Persistent MQTTS client error");
-    if (client === clientInstance && !clientInstance.connected) {
+    logError(err, "Persistent WSS client error");
+    if (wssClient === clientInstance && !clientInstance.connected) {
       clientInstance.end(true);
     }
   };
@@ -202,25 +189,16 @@ function setupPersistentEventHandlers(clientInstance: MqttClient) {
   clientInstance.on("message", handleMessageWrapper);
 }
 
-const originalConnectMqtt = connectMqtt;
-export async function connectMqttWithHandlers(): Promise<MqttClient | null> {
-  const connectedClient = await originalConnectMqtt();
-  if (connectedClient && !connectedClient.listenerCount("close")) {
-    setupPersistentEventHandlers(connectedClient);
-  }
-  return connectedClient;
-}
-
 export async function publishMessage(
   topic: string,
   message: string | object
 ): Promise<boolean> {
-  let mqttClient: MqttClient | null = null;
+  let currentWssClient: MqttClient | null = null;
   try {
-    mqttClient = await connectMqtt();
-    if (!mqttClient || !mqttClient.connected) {
+    currentWssClient = await connectWss();
+    if (!currentWssClient || !currentWssClient.connected) {
       logError(
-        new Error("MQTT client is not connected or available"),
+        new Error("WSS client is not connected or available"),
         `Failed to publish to ${topic}`
       );
       return false;
@@ -229,7 +207,7 @@ export async function publishMessage(
     const payload =
       typeof message === "string" ? message : JSON.stringify(message);
 
-    await mqttClient.publishAsync(topic, payload, { qos: 2 });
+    await currentWssClient.publishAsync(topic, payload, { qos: 2 });
     return true;
   } catch (error) {
     logError(error, `Error publishing to ${topic}`);
@@ -241,33 +219,33 @@ export async function subscribeToTopic(
   topic: string,
   callback: (topic: string, message: string) => void
 ): Promise<boolean> {
-  let currentClient: MqttClient | null = null;
+  let currentWssClient: MqttClient | null = null;
 
   try {
-    currentClient = await connectMqtt();
-    if (!currentClient || !currentClient.connected) {
+    currentWssClient = await connectWss();
+    if (!currentWssClient || !currentWssClient.connected) {
       logError(
-        new Error("MQTT client is not connected"),
+        new Error("WSS client is not connected"),
         `Failed to subscribe to ${topic}`
       );
       return false;
     }
 
-    const callbacks = topicCallbacks.get(topic) || new Set();
+    const callbacks = wssTopicCallbacks.get(topic) || new Set();
     const needsBrokerSubscription = callbacks.size === 0;
 
     callbacks.add(callback);
-    topicCallbacks.set(topic, callbacks);
+    wssTopicCallbacks.set(topic, callbacks);
 
     if (needsBrokerSubscription) {
       try {
-        await currentClient.subscribeAsync(topic, { qos: 0 });
+        await currentWssClient.subscribeAsync(topic, { qos: 0 });
         return true;
       } catch (err) {
         logError(err, `Failed to subscribe to ${topic} on broker`);
         callbacks.delete(callback);
         if (callbacks.size === 0) {
-          topicCallbacks.delete(topic);
+          wssTopicCallbacks.delete(topic);
         }
         return false;
       }
@@ -276,11 +254,11 @@ export async function subscribeToTopic(
     }
   } catch (error) {
     logError(error, `Error processing server-side subscription for ${topic}`);
-    const callbacks = topicCallbacks.get(topic);
+    const callbacks = wssTopicCallbacks.get(topic);
     if (callbacks) {
       callbacks.delete(callback);
       if (callbacks.size === 0) {
-        topicCallbacks.delete(topic);
+        wssTopicCallbacks.delete(topic);
       }
     }
     return false;
@@ -291,10 +269,10 @@ export async function unsubscribeFromTopic(
   topic: string,
   callback: (topic: string, message: string) => void
 ): Promise<boolean> {
-  const currentClient = client;
+  const currentWssClient = wssClient;
 
   try {
-    const callbacks = topicCallbacks.get(topic);
+    const callbacks = wssTopicCallbacks.get(topic);
     if (!callbacks || !callbacks.has(callback)) {
       return false;
     }
@@ -302,11 +280,11 @@ export async function unsubscribeFromTopic(
     callbacks.delete(callback);
 
     if (callbacks.size === 0) {
-      topicCallbacks.delete(topic);
+      wssTopicCallbacks.delete(topic);
 
-      if (currentClient && currentClient.connected) {
+      if (currentWssClient && currentWssClient.connected) {
         try {
-          await currentClient.unsubscribeAsync(topic);
+          await currentWssClient.unsubscribeAsync(topic);
           return true;
         } catch (err) {
           logError(err, `Failed to unsubscribe from ${topic} on broker`);
@@ -324,17 +302,19 @@ export async function unsubscribeFromTopic(
   }
 }
 
-export function disconnectMqtt(): boolean {
-  if (client) {
+export function disconnectWss(): boolean {
+  if (wssClient) {
     try {
-      client.end(true, () => {});
-      client = null;
-      topicCallbacks.clear();
+      wssClient.end(true, () => {});
+      wssClient = null;
+      wssTopicCallbacks.clear();
+      isWssConnecting = false;
       return true;
     } catch (error) {
-      logError(error, "Error during MQTTS client.end()");
-      client = null;
-      topicCallbacks.clear();
+      logError(error, "Error during WSS client.end()");
+      wssClient = null;
+      wssTopicCallbacks.clear();
+      isWssConnecting = false;
       return false;
     }
   } else {

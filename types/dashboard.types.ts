@@ -95,3 +95,8 @@ export type TabValue = "overview" | "monitoring" | "analytics";
 export type SearchParams = Promise<{
   [key: string]: string | string[] | undefined;
 }>;
+
+export interface CameraMessage {
+  timestamp: string;
+  image: string; // base64 encoded image
+}

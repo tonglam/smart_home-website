@@ -25,16 +25,11 @@ interface RawData {
 }
 
 export const fetchData = async (homeId: string): Promise<RawData> => {
-  console.log(`[Data:Dashboard] Starting fetchData for homeId: ${homeId}`);
-  const startTime = Date.now();
   try {
-    console.time(`[Data:Dashboard] DB fetchDevicesByHomeId ${homeId}`);
     const devicesPromise = fetchDevicesByHomeId(homeId);
 
-    console.time(`[Data:Dashboard] DB fetchRecentHomeEvents ${homeId}`);
     const eventsPromise = fetchRecentHomeEvents(homeId);
 
-    console.time(`[Data:Dashboard] DB fetchAlertsByHomeId ${homeId}`);
     const alertsPromise = fetchAlertsByHomeId(homeId);
 
     const [devices, events, alerts] = await Promise.all([
@@ -43,18 +38,8 @@ export const fetchData = async (homeId: string): Promise<RawData> => {
       alertsPromise,
     ]);
 
-    const endTime = Date.now();
-    console.log(
-      `[Data:Dashboard] Finished fetchData for homeId: ${homeId}. Found ${devices.length} devices, ${events.length} events, ${alerts.length} alerts. Total time: ${endTime - startTime}ms`
-    );
-
     return { devices, events, alerts };
   } catch (error) {
-    const endTime = Date.now();
-    console.error(
-      `[Data:Dashboard] Error in fetchData for homeId: ${homeId} after ${endTime - startTime}ms`,
-      error
-    );
     throw new Error(
       `Failed to fetch dashboard data: ${error instanceof Error ? error.message : String(error)}`
     );
@@ -141,11 +126,6 @@ export const transformData = (
   homeId: string,
   userDisplayName: string
 ): DashboardData => {
-  console.log(
-    `[Data:Dashboard] Starting transformData for homeId: ${homeId}. Received ${rawData.devices.length} devices, ${rawData.events.length} events, ${rawData.alerts.length} alerts.`
-  );
-  const startTime = Date.now();
-
   const { devices, events, alerts } = rawData;
 
   // device name mapping
@@ -191,11 +171,6 @@ export const transformData = (
     homeId,
     userDisplayName,
   };
-
-  const endTime = Date.now();
-  console.log(
-    `[Data:Dashboard] Finished transformData for homeId: ${homeId}. Total time: ${endTime - startTime}ms`
-  );
 
   return transformedData;
 };

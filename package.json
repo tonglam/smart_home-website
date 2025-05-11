@@ -56,7 +56,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "embla-carousel-react": "^8.6.0",
     "esbuild": "^0.25.4",
@@ -92,8 +91,11 @@
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
     "cssnano": "^7.0.7",
+    "dotenv": "^16.5.0",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.26.0",
-    "eslint-config-next": "^15.3.2"
+    "eslint-config-next": "^15.3.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4"
   }
 }
