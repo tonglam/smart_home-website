@@ -30,7 +30,6 @@ export function HomeConnectSection({
     onConnectionChange?.(Boolean(currentHomeId));
   }, [currentHomeId, onConnectionChange]);
 
-  // Show prompt only when user is logged in, no home connected, and dialog not open
   const shouldShowPrompt =
     isLoaded && isSignedIn && !currentHomeId && !showConnectHome;
 

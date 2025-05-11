@@ -9,11 +9,6 @@ interface UseHomeConnectionProps {
   initialHomeId?: string | null;
 }
 
-/**
- * Hook to manage smart home connection state and actions
- * @param props - Connection props including callbacks and state
- * @returns Connection state and handlers
- */
 export function useHomeConnection({
   onOpenChange,
   open,

@@ -1,6 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
 
-// SignIn form customization
 const SignInForm = () => (
   <SignIn
     appearance={{

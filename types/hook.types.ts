@@ -1,13 +1,10 @@
 import { UserResource } from "@clerk/types";
 
 // =================== Auth Types ===================
-/** @description User metadata stored in Clerk */
 export interface UserMetadata {
   homeId?: string;
-  // Add other metadata fields as needed
 }
 
-/** @description Authentication state returned by useAuth hook */
 export interface AuthState {
   isLoaded: boolean;
   isSignedIn: boolean | undefined;
@@ -17,14 +14,12 @@ export interface AuthState {
   isHomeConnected: boolean;
 }
 
-/** @description Authentication actions returned by useAuth hook */
 export interface AuthActions {
   signIn: () => void;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
 
-/** @description Auth navigation state and actions */
 export interface AuthNavigationState {
   isLoaded: boolean;
   isSignedIn: boolean | undefined;
@@ -35,7 +30,6 @@ export interface AuthNavigationState {
   closeConnectHome: () => void;
 }
 
-/** @description Session management state and actions */
 export interface SessionState {
   timeLeft: number | null;
   showWarning: boolean;
@@ -45,7 +39,6 @@ export interface SessionState {
 }
 
 // =================== Home Connection Types ===================
-/** @description Home connection hook return type */
 export interface UseHomeConnectionReturn {
   currentHomeId: string;
   isConnecting: boolean;
@@ -54,14 +47,12 @@ export interface UseHomeConnectionReturn {
   handleDisconnect: () => Promise<void>;
 }
 
-/** @description Connection error types */
 export type ConnectionError = {
   code: "UNAUTHENTICATED" | "INVALID_HOME_ID" | "CONNECTION_FAILED";
   message: string;
 };
 
 // =================== MQTT Types ===================
-/** @description MQTT hook return type */
 export interface UseMqttReturn {
   isConnected: boolean;
   isConnecting: boolean;
@@ -75,7 +66,6 @@ export interface UseMqttReturn {
 }
 
 // =================== Database Types ===================
-/** @description Generic database hook return type */
 export interface UseDbReturn<T> {
   data: T | null;
   isLoading: boolean;
@@ -84,7 +74,6 @@ export interface UseDbReturn<T> {
 }
 
 // =================== User Types ===================
-/** @description User management hook return type */
 export interface UseUserReturn {
   userId: string;
   email: string | null;
@@ -95,7 +84,6 @@ export interface UseUserReturn {
 }
 
 // =================== Device Types ===================
-/** @description Device management hook return type */
 export interface UseDeviceReturn {
   deviceId: string;
   status: "online" | "offline" | "error";
@@ -107,7 +95,6 @@ export interface UseDeviceReturn {
 }
 
 // =================== Cache Types ===================
-/** @description Cache management hook return type */
 export interface UseCacheReturn<T> {
   data: T | null;
   isStale: boolean;
@@ -117,10 +104,8 @@ export interface UseCacheReturn<T> {
 }
 
 // =================== Notification Types ===================
-/** @description Notification type */
 export type NotificationType = "info" | "warning" | "error" | "success";
 
-/** @description Notification object structure */
 export interface Notification {
   id: string;
   type: NotificationType;
@@ -128,7 +113,6 @@ export interface Notification {
   timestamp: Date;
 }
 
-/** @description Notification management hook return type */
 export interface UseNotificationReturn {
   notifications: Notification[];
   addNotification: (type: NotificationType, message: string) => void;

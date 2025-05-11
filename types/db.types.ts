@@ -1,4 +1,3 @@
-/** @description Supported event types in the system */
 export const EventTypes = {
   STATE_CHANGE: "state_change",
   SECURITY_ALERT: "security_alert",

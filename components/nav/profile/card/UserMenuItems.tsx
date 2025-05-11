@@ -9,11 +9,8 @@ import { HiOutlineMail } from "react-icons/hi";
 import { IoLogOutOutline } from "react-icons/io5";
 
 export interface UserMenuItemsProps {
-  /** Callback function when the user wants to change their email */
   onChangeEmail: () => void;
-  /** Callback function when the user wants to sign out */
   onSignOut: () => void;
-  /** Whether the sign out action is in progress */
   isSigningOut?: boolean;
 }
 

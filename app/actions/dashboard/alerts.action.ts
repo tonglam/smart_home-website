@@ -3,9 +3,6 @@
 import { dismissAlertById } from "@/db/db";
 import { revalidatePath } from "next/cache";
 
-/**
- * Dismisses an alert by ID
- */
 export async function dismissAlert(alertId: string): Promise<boolean> {
   try {
     await dismissAlertById(alertId);

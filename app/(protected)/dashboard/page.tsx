@@ -4,6 +4,7 @@ import {
   getDefaultDashboardData,
   transformData,
 } from "@/lib/data/dashboard.data";
+import type { SearchParams } from "@/types/dashboard.types";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -22,8 +23,6 @@ export const metadata: Metadata = {
     follow: true,
   },
 };
-
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function DashboardPage(props: {
   searchParams: SearchParams;

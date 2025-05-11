@@ -24,9 +24,6 @@ interface RawData {
   alerts: AlertLog[];
 }
 
-/**
- * Fetches raw dashboard data using the db.ts data access layer
- */
 export const fetchData = async (homeId: string): Promise<RawData> => {
   console.log(`[Data:Dashboard] Starting fetchData for homeId: ${homeId}`);
   const startTime = Date.now();
@@ -40,17 +37,11 @@ export const fetchData = async (homeId: string): Promise<RawData> => {
     console.time(`[Data:Dashboard] DB fetchAlertsByHomeId ${homeId}`);
     const alertsPromise = fetchAlertsByHomeId(homeId);
 
-    // Await all promises concurrently
     const [devices, events, alerts] = await Promise.all([
       devicesPromise,
       eventsPromise,
       alertsPromise,
     ]);
-
-    // Log end times after Promise.all resolves
-    console.timeEnd(`[Data:Dashboard] DB fetchDevicesByHomeId ${homeId}`);
-    console.timeEnd(`[Data:Dashboard] DB fetchRecentHomeEvents ${homeId}`);
-    console.timeEnd(`[Data:Dashboard] DB fetchAlertsByHomeId ${homeId}`);
 
     const endTime = Date.now();
     console.log(
@@ -64,7 +55,6 @@ export const fetchData = async (homeId: string): Promise<RawData> => {
       `[Data:Dashboard] Error in fetchData for homeId: ${homeId} after ${endTime - startTime}ms`,
       error
     );
-    // Re-throw or return default/empty state depending on requirements
     throw new Error(
       `Failed to fetch dashboard data: ${error instanceof Error ? error.message : String(error)}`
     );
@@ -146,9 +136,6 @@ const transformToActivity = (
   };
 };
 
-/**
- * Transforms raw data into dashboard format
- */
 export const transformData = (
   rawData: RawData,
   homeId: string,
@@ -170,12 +157,10 @@ export const transformData = (
     {} as Record<string, string>
   );
 
-  // Filter light devices and transform them to Light type
   const lightDevicesData = devices
     .filter((device) => device.type === "light")
     .map(transformToLight);
 
-  // Get the current mode from any light device before transformation
   const deviceMode = lightDevicesData[0]?.mode || "";
   const currentMode =
     automationModes.find((mode) => mode.id === deviceMode)?.id || "";
@@ -188,12 +173,10 @@ export const transformData = (
     })
     .map(transformToSecurityPoint);
 
-  // Transform events to activities
   const activityData = events.map((event) =>
     transformToActivity(event, deviceNameMap)
   );
 
-  // Transform alerts to match Alert type
   const alertsData = alerts.map((alert) =>
     transformToAlert(alert, deviceNameMap)
   );
@@ -217,9 +200,6 @@ export const transformData = (
   return transformedData;
 };
 
-/**
- * Returns default dashboard data when no data is available
- */
 export const getDefaultDashboardData = (
   userDisplayName: string
 ): DashboardData => ({

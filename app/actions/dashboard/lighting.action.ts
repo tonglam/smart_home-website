@@ -5,7 +5,6 @@ import { Device, EventLog } from "@/db/schema";
 import { publishMessage } from "@/lib/utils/mqtt.util";
 import { revalidatePath } from "next/cache";
 
-// Define the type for light-specific updates more accurately
 type LightUpdatePayload = Partial<
   Pick<Device, "currentState" | "brightness" | "temperature">
 >;

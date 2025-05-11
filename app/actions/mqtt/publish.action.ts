@@ -9,14 +9,6 @@ interface ActionResult {
   error?: string;
 }
 
-/**
- * Server Action to securely publish an MQTT message.
- * Ensures the user is authenticated before publishing.
- *
- * @param topic The MQTT topic to publish to.
- * @param message The message payload (string or object).
- * @returns ActionResult indicating success or failure.
- */
 export async function publishMqttMessageAction(
   topic: string,
   message: string | object

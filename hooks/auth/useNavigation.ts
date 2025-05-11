@@ -26,11 +26,7 @@ export function useAuthNavigation(): AuthNavigationState {
     isSignedIn,
     isHomeConnected,
     homeId,
-
-    // Home connection UI state
     showConnectHome,
-
-    // Actions
     openConnectHome,
     closeConnectHome,
   } as const;

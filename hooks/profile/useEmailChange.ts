@@ -10,10 +10,6 @@ interface UseEmailChangeReturn {
   handleEmailChange: (data: EmailChangeFormData) => Promise<void>;
 }
 
-/**
- * Hook for handling notification email changes in the smart home system
- * This updates the notification email in D1 database, not the user's auth email
- */
 export function useEmailChange(
   currentEmail: string,
   onEmailChange: (email: string) => Promise<void>
@@ -41,7 +37,7 @@ export function useEmailChange(
       setIsSubmitting(true);
       setError(null);
       await onEmailChange(data.email);
-      form.reset({ email: data.email }); // Update form with new email
+      form.reset({ email: data.email });
     } catch (err) {
       setError(
         err instanceof Error

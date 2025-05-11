@@ -13,22 +13,17 @@ function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-/**
- * Updates the homeId in user's Clerk public metadata
- */
 export async function updateUserHomeId(
   userId: string,
   homeId: string
 ): Promise<UpdateUserResult> {
   try {
-    // Get the Clerk API key from environment variables
     const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
     if (!CLERK_SECRET_KEY) {
       throw new Error("Missing CLERK_SECRET_KEY environment variable");
     }
 
-    // Update Clerk public metadata
     const response = await fetch(
       `https://api.clerk.com/v1/users/${userId}/metadata`,
       {
@@ -49,7 +44,6 @@ export async function updateUserHomeId(
       throw new Error(`Failed to update user metadata: ${response.statusText}`);
     }
 
-    // Revalidate paths that might depend on this data
     revalidatePath("/");
     revalidatePath("/dashboard");
     revalidatePath("/profile");
@@ -70,15 +64,11 @@ export async function updateUserHomeId(
   }
 }
 
-/**
- * Updates the user's email in Supabase database
- */
 export async function updateUserEmail(
   userId: string,
   email: string
 ): Promise<UpdateUserResult> {
   try {
-    // Validate email format
     if (!email || !isValidEmail(email)) {
       return {
         success: false,
@@ -86,10 +76,8 @@ export async function updateUserEmail(
       };
     }
 
-    // Update email using the db function
     await updateUserEmailById(userId, email);
 
-    // Revalidate relevant paths
     revalidatePath("/profile");
     revalidatePath("/dashboard");
 

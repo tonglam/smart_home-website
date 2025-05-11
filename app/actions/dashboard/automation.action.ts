@@ -12,14 +12,6 @@ export interface AutomationMode {
   active: boolean;
 }
 
-/**
- * Activates or deactivates an automation mode for a given home.
- * Setting a mode updates all light devices in the home.
- * Passing null as modeId deactivates the current mode.
- * @param homeId - The ID of the home.
- * @param modeId - The ID of the mode to activate, or null to deactivate.
- * @returns Promise<boolean> - True if successful, false otherwise.
- */
 export async function toggleAutomationMode(
   homeId: string,
   modeId: string | null

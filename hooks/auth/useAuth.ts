@@ -9,20 +9,17 @@ export function useAuth(): AuthState & AuthActions {
   const { user, isLoaded, isSignedIn } = useUser();
   const { signOut, openSignIn, session } = useClerk();
 
-  // Memoize metadata to prevent unnecessary re-renders
   const metadata = useMemo<UserMetadata>(
     () => (user?.publicMetadata as UserMetadata) ?? {},
     [user?.publicMetadata]
   );
 
-  // Memoize derived states
   const homeId = useMemo(() => metadata.homeId, [metadata]);
   const isHomeConnected = useMemo(
     () => isLoaded && !!metadata.homeId,
     [isLoaded, metadata.homeId]
   );
 
-  // Auth actions
   const signIn = useCallback(() => {
     try {
       openSignIn();
@@ -52,15 +49,12 @@ export function useAuth(): AuthState & AuthActions {
   }, [session]);
 
   return {
-    // Auth states
     isLoaded,
     isSignedIn,
     user,
     metadata,
     homeId,
     isHomeConnected,
-
-    // Auth actions
     signIn,
     signOut: handleSignOut,
     refreshSession,

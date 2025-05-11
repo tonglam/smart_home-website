@@ -1,17 +1,12 @@
-// Email configuration defaults
 export const EMAIL_DEFAULTS = {
-  FROM_EMAIL: "onboarding@resend.dev", // Resend's test email
-  TEST_EMAIL: "qitonglan@gmail.com", // Verified email for testing
+  FROM_EMAIL: "onboarding@resend.dev",
+  TEST_EMAIL: "qitonglan@gmail.com",
   REPLY_TO: "onboarding@resend.dev",
 } as const;
 
-// Default values for smart home settings
-
-// Default lighting values
 export const DEFAULT_BRIGHTNESS = 100;
 export const DEFAULT_TEMPERATURE = 4600;
 
-// Base automation mode configurations
 export const automationModes = [
   {
     id: "away",

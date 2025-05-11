@@ -91,3 +91,7 @@ export interface DashboardData {
 }
 
 export type TabValue = "overview" | "monitoring" | "analytics";
+
+export type SearchParams = Promise<{
+  [key: string]: string | string[] | undefined;
+}>;

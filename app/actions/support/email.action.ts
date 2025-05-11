@@ -11,10 +11,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendContactEmail(formData: ContactFormData) {
   try {
-    // Validate the input data
     const validatedData = contactFormSchema.parse(formData);
 
-    // Create confirmation email content
     const emailContent = `
       Dear ${validatedData.fullName},
 
@@ -34,13 +32,11 @@ export async function sendContactEmail(formData: ContactFormData) {
       Smart Home Support Team
     `;
 
-    // In test mode, we can only send to the verified email
     const isTestMode = EMAIL_DEFAULTS.FROM_EMAIL.includes("resend.dev");
     const emailRecipient = isTestMode
       ? EMAIL_DEFAULTS.TEST_EMAIL
       : validatedData.email;
 
-    // Send confirmation email to customer
     const result = await resend.emails.send({
       from: EMAIL_DEFAULTS.FROM_EMAIL,
       to: [emailRecipient],
