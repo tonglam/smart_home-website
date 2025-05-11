@@ -307,3 +307,24 @@ export const createOrUpdateUserHomeConnection = async (
     throw error;
   }
 };
+
+export const createAlert = async (alert: Partial<AlertLog>) => {
+  try {
+    const [data] = await db
+      .insert(alertLog)
+      .values({
+        homeId: alert.homeId!,
+        userId: alert.userId ?? "system", // fallback if not provided
+        deviceId: alert.deviceId,
+        message: alert.message ?? "Critical alert!",
+        sentStatus: alert.sentStatus ?? false,
+        dismissed: alert.dismissed ?? false,
+        createdAt: alert.createdAt ? new Date(alert.createdAt) : new Date(),
+      })
+      .returning();
+    return { success: true, data };
+  } catch (err) {
+    const error = err as Error;
+    return { success: false, error: error.message };
+  }
+};

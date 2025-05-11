@@ -7,10 +7,17 @@ import { Activity } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AlertCard } from "./AlertCard";
+import mqtt from "mqtt";
 
 interface AlertCardContainerProps {
   alerts: Alert[];
 }
+
+const MQTT_BROKER = "849ccde8bee24a28a3de955a812bbf44.s1.eu.hivemq.cloud";
+const MQTT_PORT = 8884;
+const MQTT_TOPIC = "alerts/critical";
+const MQTT_USERNAME = "group24";
+const MQTT_PASSWORD = "CITS5506IoT";
 
 export function AlertCardContainer({
   alerts: initialAlerts,
@@ -20,6 +27,43 @@ export function AlertCardContainer({
   useEffect(() => {
     setAlerts(initialAlerts);
   }, [initialAlerts]);
+
+  // MQTT subscription for real-time alerts
+  useEffect(() => {
+    const client = mqtt.connect(`wss://${MQTT_BROKER}:${MQTT_PORT}/mqtt`, {
+      username: MQTT_USERNAME,
+      password: MQTT_PASSWORD,
+      clientId: `web_alert_${Math.random().toString(16).slice(3)}`,
+      clean: true,
+      rejectUnauthorized: false
+    });
+
+    client.on("connect", () => {
+      client.subscribe(MQTT_TOPIC);
+    });
+
+    client.on("message", (topic, message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        // Add the new alert to the top of the list
+        setAlerts((prev) => [
+          {
+            id: `mqtt-${Date.now()}`,
+            type: data.type || "error",
+            message: data.message || "Critical alert!",
+            deviceName: data.source || "raspberry-pi",
+            timestamp: data.timestamp || new Date().toISOString(),
+            dismissed: false,
+          },
+          ...prev,
+        ]);
+      } catch (e) {
+        console.error("Error parsing MQTT alert:", e);
+      }
+    });
+
+    return () => { client.end(); };
+  }, []);
 
   const handleDismiss = useCallback(
     async (alertId: string, deviceName: string) => {

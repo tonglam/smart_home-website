@@ -121,3 +121,59 @@ MIT Licensed - See [LICENSE](https://github.com/tonglam/smart_home-website/blob/
 
 [![Live Demo](https://img.shields.io/badge/demo-live-green)](https://smarthome-three.vercel.app/)
 [![GitHub Issues](https://img.shields.io/github/issues/tonglam/smart_home-website)](https://github.com/tonglam/smart_home-website/issues)
+
+# Smart Home Camera Streamer
+
+This is a Python application that streams camera feed from a Raspberry Pi to a web application using MQTT.
+
+## Setup Instructions
+
+1. Create and activate virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Create a `.env` file with your MQTT credentials:
+```
+MQTT_BROKER=c5230fc20196453ba48d5f77d64fe2ec.s1.eu.hivemq.cloud
+MQTT_PORT=8883
+MQTT_USERNAME=group24
+MQTT_PASSWORD=CITS5506IoT
+MQTT_TOPIC=camera/stream
+```
+
+4. Run the application:
+```bash
+python camera_stream.py
+```
+
+## Configuration
+
+You can adjust the following parameters in `camera_stream.py`:
+- `CAMERA_INDEX`: Camera device index (default: 0)
+- `FRAME_WIDTH`: Frame width in pixels (default: 640)
+- `FRAME_HEIGHT`: Frame height in pixels (default: 480)
+- `FRAME_RATE`: Frames per second (default: 10)
+- `JPEG_QUALITY`: Image quality (0-100, default: 80)
+
+## Troubleshooting
+
+1. If camera is not detected:
+   - Check if camera is properly connected
+   - Try different `CAMERA_INDEX` values
+   - Run `ls /dev/video*` to list available cameras
+
+2. If MQTT connection fails:
+   - Check your internet connection
+   - Verify MQTT credentials in `.env` file
+   - Ensure HiveMQ broker is accessible
+
+## Logging
+
+The application logs important events and errors to the console. Check the output for any issues.

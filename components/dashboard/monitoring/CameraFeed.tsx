@@ -3,16 +3,58 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Activity, Video } from "lucide-react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import mqtt from "mqtt";
 
-const LIVE_STREAM_URL = "https://smart-home-hub.qitonglan.com";
-const PLACEHOLDER_IMAGE =
-  "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
+const MQTT_BROKER = "849ccde8bee24a28a3de955a812bbf44.s1.eu.hivemq.cloud";
+const MQTT_PORT = 8884;
+const MQTT_TOPIC = "camera/stream";
+const MQTT_USERNAME = "group24";
+const MQTT_PASSWORD = "CITS5506IoT";
 
 export function CameraFeed() {
-  const handleOpenLiveStream = () => {
-    window.open(LIVE_STREAM_URL, "_blank", "noopener,noreferrer");
-  };
+  const [imageSrc, setImageSrc] = useState<string>("");
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    // Connect to MQTT broker with credentials
+    const client = mqtt.connect(`wss://${MQTT_BROKER}:${MQTT_PORT}/mqtt`, {
+      username: MQTT_USERNAME,
+      password: MQTT_PASSWORD,
+      clientId: `web_${Math.random().toString(16).slice(3)}`,
+      clean: true,
+      rejectUnauthorized: false
+    });
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+      setIsConnected(true);
+      client.subscribe(MQTT_TOPIC);
+    });
+
+    client.on("message", (topic, message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        setImageSrc(`data:image/jpeg;base64,${data.image}`);
+      } catch (error) {
+        console.error("Error processing message:", error);
+      }
+    });
+
+    client.on("error", (error) => {
+      console.error("MQTT Error:", error);
+      setIsConnected(false);
+    });
+
+    client.on("close", () => {
+      console.log("MQTT connection closed");
+      setIsConnected(false);
+    });
+
+    return () => {
+      client.end();
+    };
+  }, []);
 
   return (
     <div>
@@ -23,27 +65,25 @@ export function CameraFeed() {
             <div className="flex items-center gap-2">
               <Video className="h-5 w-5" />
             </div>
-            <span className="text-sm text-green-500">Live</span>
+            <span className={`text-sm ${isConnected ? "text-green-500" : "text-red-500"}`}>
+              {isConnected ? "Live" : "Disconnected"}
+            </span>
           </div>
         </div>
         <div className="relative">
           <div className="aspect-video relative">
-            <Image
-              src={PLACEHOLDER_IMAGE}
-              alt="Live Camera Feed"
-              fill
-              className="object-cover"
-              priority
-            />
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt="Live Camera Feed"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">Waiting for camera feed...</span>
+              </div>
+            )}
           </div>
-          <Button
-            size="icon"
-            className="absolute bottom-4 right-4 h-12 w-12 rounded-full"
-            onClick={handleOpenLiveStream}
-            title="Open live stream in new window"
-          >
-            <Activity className="h-6 w-6" />
-          </Button>
         </div>
       </Card>
     </div>
