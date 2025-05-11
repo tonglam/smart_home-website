@@ -7,7 +7,6 @@ interface SecurityItemProps {
 }
 
 export function SecurityItem({ point }: SecurityItemProps) {
-  // Get the appropriate icon based on the security point type using react-icons
   const IconComponent = {
     door: MdDoorFront,
     window: MdWindow,
