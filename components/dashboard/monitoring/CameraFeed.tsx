@@ -28,11 +28,13 @@ export function CameraFeed() {
       if (topic === CAMERA_TOPIC) {
         try {
           const parsedMessage: CameraMessage = JSON.parse(message);
-          if (parsedMessage.image) {
-            setCurrentImageSrc(`data:image/png;base64,${parsedMessage.image}`);
+          if (parsedMessage.image_b64) {
+            setCurrentImageSrc(
+              `data:image/png;base64,${parsedMessage.image_b64}`
+            );
           } else {
             console.error(
-              "[CameraFeed] Parsed message, but no image data found in 'image' field."
+              "[CameraFeed] Parsed message, but no image data found in 'image_b64' field."
             );
           }
         } catch (e) {

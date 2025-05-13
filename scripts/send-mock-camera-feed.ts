@@ -11,13 +11,21 @@ const MOCK_IMAGE_BASE64 =
 
 interface MockCameraMessage {
   timestamp: string;
-  image: string;
+  home_id: string;
+  device_id: string;
+  image_b64: string;
+  format: string;
+  resolution: string;
 }
 
 async function sendMockFeedMessage() {
   const message: MockCameraMessage = {
     timestamp: new Date().toISOString(),
-    image: MOCK_IMAGE_BASE64,
+    home_id: "mock-home-123",
+    device_id: "mock-camera-789",
+    image_b64: MOCK_IMAGE_BASE64,
+    format: "image/png",
+    resolution: "640x480",
   };
 
   console.log(

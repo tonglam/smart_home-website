@@ -98,5 +98,9 @@ export type SearchParams = Promise<{
 
 export interface CameraMessage {
   timestamp: string;
-  image: string; // base64 encoded image
+  home_id: string;
+  device_id: string;
+  image_b64: string; // base64 encoded image
+  format: string;
+  resolution: string;
 }
