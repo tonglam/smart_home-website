@@ -68,7 +68,6 @@ export const updateDeviceById = async (
         lastUpdated: new Date(),
         mode: updates.mode,
         brightness: updates.brightness,
-        temperature: updates.temperature,
       })
       .where(eq(devices.id, deviceId))
       .returning();

@@ -20,14 +20,7 @@ export const automationModes = [
     name: "Movie Mode",
     icon: "Film",
     active: false,
-    description: "Perfect lighting for movie time",
-  },
-  {
-    id: "learning",
-    name: "Learning Mode",
-    icon: "BookOpen",
-    active: false,
-    description: "Optimal settings for study and focus",
+    description: "Turn on the lights for a movie night",
   },
 ] as const;
 

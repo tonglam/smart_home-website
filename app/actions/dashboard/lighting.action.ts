@@ -5,9 +5,7 @@ import { Device, EventLog } from "@/db/schema";
 import { publishMessage } from "@/lib/utils/mqtt.util";
 import { revalidatePath } from "next/cache";
 
-type LightUpdatePayload = Partial<
-  Pick<Device, "currentState" | "brightness" | "temperature">
->;
+type LightUpdatePayload = Partial<Pick<Device, "currentState" | "brightness">>;
 
 export async function updateLightState(
   deviceId: string,
@@ -27,7 +25,6 @@ export async function updateLightState(
     const updatePayload: Partial<Device> = {
       currentState: newState,
       brightness: updates.brightness,
-      temperature: updates.temperature,
     };
 
     Object.keys(updatePayload).forEach(
@@ -62,9 +59,6 @@ export async function updateLightState(
       state: newState,
       ...(updates.brightness !== undefined && {
         brightness: updates.brightness,
-      }),
-      ...(updates.temperature !== undefined && {
-        temperature: updates.temperature,
       }),
       createdAt: new Date().toISOString(),
     };

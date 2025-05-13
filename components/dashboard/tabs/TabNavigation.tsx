@@ -23,11 +23,10 @@ export function DashboardTabNavigation() {
     params.set("tab", value);
     router.push(`?${params.toString()}`);
 
-    // Reset loading state after navigation is likely complete
     setTimeout(() => {
       setIsChangingTab(false);
       setLoadingTab(null);
-    }, 1000); // Adjust timing as needed
+    }, 50); // Adjust timing as needed
   };
 
   return (

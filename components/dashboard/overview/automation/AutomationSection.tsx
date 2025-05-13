@@ -1,4 +1,4 @@
-"use client"; // Make this the stateful client component
+"use client";
 
 import { AutomationMode } from "@/app/actions/dashboard/automation.action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,10 +49,6 @@ export function AutomationSection({
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        <p className="text-sm text-muted-foreground mb-4">
-          Select one automation mode for your lights
-        </p>
-
         <div className="space-y-4">
           {modes.map((mode) => (
             <AutomationModeCard

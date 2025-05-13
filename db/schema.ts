@@ -16,7 +16,6 @@ export const devices = pgTable("devices", {
   mode: text("mode"),
   currentState: text("current_state").notNull(),
   brightness: integer("brightness"),
-  temperature: integer("temperature"),
   createdAt: timestamp("created_at").defaultNow(),
   lastUpdated: timestamp("last_updated").defaultNow(),
 });

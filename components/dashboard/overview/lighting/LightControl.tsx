@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useLighting } from "@/hooks/dashboard/useLighting";
 import type { Light } from "@/types";
-import { Lightbulb, Moon, Sun } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface LightControlProps {
@@ -14,12 +14,8 @@ interface LightControlProps {
 
 export function LightControl({ light, homeId }: LightControlProps) {
   const [brightness, setBrightness] = useState(light.brightness);
-  const [temperature, setTemperature] = useState(light.temperature);
   const [localIsOn, setLocalIsOn] = useState(light.isOn);
-  const { toggleLight, adjustBrightness, adjustTemperature } = useLighting(
-    homeId,
-    [light]
-  );
+  const { toggleLight, adjustBrightness } = useLighting(homeId, [light]);
 
   useEffect(() => {
     setLocalIsOn(light.isOn);
@@ -28,10 +24,6 @@ export function LightControl({ light, homeId }: LightControlProps) {
   useEffect(() => {
     setBrightness(light.brightness);
   }, [light.brightness]);
-
-  useEffect(() => {
-    setTemperature(light.temperature);
-  }, [light.temperature]);
 
   const handleToggle = () => {
     const optimisticIsOn = !localIsOn;
@@ -68,7 +60,7 @@ export function LightControl({ light, homeId }: LightControlProps) {
               value={[brightness]}
               min={0}
               max={100}
-              step={1}
+              step={25}
               className="[&_[role=slider]]:bg-yellow-400"
               onValueChange={(values) => {
                 const newValue = values[0];
@@ -76,29 +68,6 @@ export function LightControl({ light, homeId }: LightControlProps) {
                 adjustBrightness(light.id, newValue);
               }}
             />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Temperature</span>
-              <span className="text-sm font-medium">{temperature}K</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Moon className="h-4 w-4 text-muted-foreground" />
-              <Slider
-                defaultValue={[temperature]}
-                value={[temperature]}
-                min={2700}
-                max={6500}
-                step={100}
-                className="flex-1 [&_[role=slider]]:bg-yellow-400"
-                onValueChange={(values) => {
-                  const newValue = values[0];
-                  setTemperature(newValue);
-                  adjustTemperature(light.id, newValue);
-                }}
-              />
-              <Sun className="h-4 w-4 text-muted-foreground" />
-            </div>
           </div>
         </div>
       )}

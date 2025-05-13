@@ -105,65 +105,10 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
     }
   };
 
-  const adjustTemperature = async (id: string, value: number) => {
-    const light = lights.find((l) => l.id === id);
-    if (!light) {
-      toast.error("Light device not found");
-      return;
-    }
-
-    const newTemperature = Math.max(2700, Math.min(6500, Math.round(value)));
-
-    if (light.temperature === newTemperature || pendingUpdates.has(id)) {
-      return;
-    }
-
-    const originalTemperature = light.temperature;
-
-    try {
-      setPendingUpdates((prev) => new Set(prev).add(id));
-
-      setLights(
-        lights.map((l) =>
-          l.id === id ? { ...l, temperature: newTemperature } : l
-        )
-      );
-
-      const success = await updateLightState(id, homeId, {
-        temperature: newTemperature,
-      });
-
-      if (!success) {
-        setLights(
-          lights.map((l) =>
-            l.id === id ? { ...l, temperature: originalTemperature } : l
-          )
-        );
-        toast.error(`Failed to update temperature for ${light.name}`);
-      } else {
-        toast.success(`Temperature updated for ${light.name}`);
-      }
-    } catch (error) {
-      setLights(
-        lights.map((l) =>
-          l.id === id ? { ...l, temperature: originalTemperature } : l
-        )
-      );
-      toast.error(`Error updating temperature for ${light.name}`);
-    } finally {
-      setPendingUpdates((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
-  };
-
   return {
     lights,
     toggleLight,
     adjustBrightness,
-    adjustTemperature,
     pendingUpdates: Array.from(pendingUpdates),
   };
 }

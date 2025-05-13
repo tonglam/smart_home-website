@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils/utils";
 import { BookOpenIcon, FilmIcon, HomeIcon } from "lucide-react";
 import { useState } from "react";
 
-// Define icon components for modes
 const iconComponents = {
   Home: HomeIcon,
   Film: FilmIcon,
