@@ -10,10 +10,10 @@ export interface DashboardDevice {
   type: string;
   location: string;
   current_state?: string;
-  mode?: string;
   created_at?: string;
   last_updated?: string;
 }
+
 export type ActivityIconType = "device" | "security" | "system";
 export type AlertSeverity = "warning" | "info" | "error";
 export type SecurityPointIcon = "door" | "window" | "device";
@@ -23,16 +23,13 @@ export type Light = {
   homeId: string;
   name: string;
   location: string;
-  mode: string;
   isOn: boolean;
   brightness: number;
-  temperature: number;
 };
 
 export type LightState = {
   isOn: boolean;
   brightness: number;
-  temperature: number;
 };
 
 /**

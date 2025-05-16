@@ -12,7 +12,7 @@ interface RecommendationItem {
   description: string;
 }
 
-const RecommendationItem = ({ item }: { item: RecommendationItem }) => (
+const RecommendationItemCard = ({ item }: { item: RecommendationItem }) => (
   <div className="border rounded-lg p-4">
     <div className="flex items-start gap-4">
       <div className="p-2 bg-primary/10 rounded-full">
@@ -33,7 +33,7 @@ const RecommendationsList = ({
 }) => (
   <div className="space-y-4">
     {recommendations.map((item, index) => (
-      <RecommendationItem key={index} item={item} />
+      <RecommendationItemCard key={index} item={item} />
     ))}
   </div>
 );

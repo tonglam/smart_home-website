@@ -11,6 +11,8 @@ import {
 } from "@/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
 
+export { db };
+
 export async function testDatabaseConnection() {
   try {
     await db.select().from(devices).limit(1);
@@ -58,25 +60,28 @@ export const fetchDeviceById = async (
 
 export const updateDeviceById = async (
   deviceId: string,
-  updates: Partial<Omit<Device, "id" | "homeId" | "type" | "createdAt">>
+  updates: Partial<
+    Pick<Device, "name" | "location" | "currentState" | "brightness">
+  >
 ) => {
   try {
-    const [data] = await db
+    const [updatedDevice] = await db
       .update(devices)
       .set({
+        name: updates.name,
+        location: updates.location,
         currentState: updates.currentState,
-        lastUpdated: new Date(),
-        mode: updates.mode,
         brightness: updates.brightness,
+        lastUpdated: new Date(),
       })
       .where(eq(devices.id, deviceId))
       .returning();
 
-    if (!data) {
+    if (!updatedDevice) {
       return { success: false, error: "Failed to update device" };
     }
 
-    return { success: true, data };
+    return { success: true, data: updatedDevice };
   } catch (err) {
     const error = err as Error;
     console.error("[updateDeviceById] Error:", error);
@@ -280,11 +285,56 @@ export const markEventAsRead = async (eventId: number): Promise<void> => {
   }
 };
 
-// User-home operations
+// Home mode operations
+export const getHomeMode = async (
+  userId: string,
+  homeId: string
+): Promise<string> => {
+  try {
+    const [data] = await db
+      .select({ mode: userHomes.mode })
+      .from(userHomes)
+      .where(and(eq(userHomes.userId, userId), eq(userHomes.homeId, homeId)))
+      .limit(1);
+
+    return data?.mode || "home";
+  } catch (err) {
+    const error = err as Error;
+    console.error("[getHomeMode] Error:", error);
+    throw error;
+  }
+};
+
+export const updateHomeMode = async (
+  userId: string,
+  homeId: string,
+  mode: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const [data] = await db
+      .update(userHomes)
+      .set({ mode })
+      .where(and(eq(userHomes.userId, userId), eq(userHomes.homeId, homeId)))
+      .returning();
+
+    if (!data) {
+      return { success: false, error: "Failed to update home mode" };
+    }
+
+    return { success: true };
+  } catch (err) {
+    const error = err as Error;
+    console.error("[updateHomeMode] Error:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Update createOrUpdateUserHomeConnection to include mode
 export const createOrUpdateUserHomeConnection = async (
   userId: string,
   homeId: string,
-  email: string
+  email: string,
+  mode: string = "home"
 ): Promise<void> => {
   try {
     const [existingConnection] = await db
@@ -298,6 +348,7 @@ export const createOrUpdateUserHomeConnection = async (
         userId,
         homeId,
         email,
+        mode,
         createdAt: new Date(),
       });
     }

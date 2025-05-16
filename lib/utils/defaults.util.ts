@@ -4,22 +4,25 @@ export const EMAIL_DEFAULTS = {
   REPLY_TO: "onboarding@resend.dev",
 } as const;
 
-export const DEFAULT_BRIGHTNESS = 100;
-export const DEFAULT_TEMPERATURE = 4600;
+export const DEFAULT_BRIGHTNESS = 0;
 
 export const automationModes = [
+  {
+    id: "home",
+    name: "Home Mode",
+    icon: "Home",
+    description: "Normal home operation mode",
+  },
   {
     id: "away",
     name: "Away Mode",
     icon: "Home",
-    active: false,
     description: "Secure your home when you're away",
   },
   {
     id: "movie",
     name: "Movie Mode",
     icon: "Film",
-    active: false,
     description: "Turn on the lights for a movie night",
   },
 ] as const;

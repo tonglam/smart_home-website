@@ -1,23 +1,23 @@
 -- Create a test home with MAC address format
-INSERT INTO user_homes (user_id, home_id, email)
-VALUES ('user_2uo5j6ahQyHx9FZDIPa80IZYdCs', '00:1A:22:33:44:55', 'bluedragon0000@gmail.com');
+INSERT INTO user_homes (user_id, home_id, mode, email)
+VALUES ('user_2uo5j6ahQyHx9FZDIPa80IZYdCs', '00:1A:22:33:44:55', 'home', 'bluedragon0000@gmail.com');
 
 -- Devices with UUIDv4-style IDs
-INSERT INTO devices (id, home_id, name, type, location, mode, current_state, brightness, temperature) VALUES
+INSERT INTO devices (id, home_id, name, type, location, current_state, brightness, temperature) VALUES
 -- Lights (UUIDv4 pattern: 8-4-4-4-12, using first 8 chars for simplicity)
-('light_a1b2c3d4', '00:1A:22:33:44:55', 'Ambient Ceiling Light', 'light', 'Living Room', 'away', 'off', NULL, NULL),
-('light_e5f6g7h8', '00:1A:22:33:44:55', 'Task Lighting', 'light', 'Kitchen', 'away', 'on', 80, 4000),
-('light_i9j0k1l2', '00:1A:22:33:44:55', 'Pathway Light', 'light', 'Front Yard', 'away', 'on', 60, 3000),
+('light_a1b2c3d4', '00:1A:22:33:44:55', 'Ambient Ceiling Light', 'light', 'Living Room', 'on', 80, NULL),
+('light_e5f6g7h8', '00:1A:22:33:44:55', 'Task Lighting', 'light', 'Kitchen', 'off', 0, NULL),
+('light_i9j0k1l2', '00:1A:22:33:44:55', 'Pathway Light', 'light', 'Front Yard', 'on', 60, NULL),
 
 -- Doors
-('door_m3n4o5p6', '00:1A:22:33:44:55', 'Main Entry Sensor', 'door_sensor', 'Front Entrance', 'away', 'closed', NULL, NULL),
-('door_q7r8s9t0', '00:1A:22:33:44:55', 'Patio Sensor', 'door_sensor', 'Back Patio', 'away', 'open', NULL, NULL),
+('door_m3n4o5p6', '00:1A:22:33:44:55', 'Main Entry Sensor', 'door_sensor', 'Front Entrance', 'closed', NULL, NULL),
+('door_q7r8s9t0', '00:1A:22:33:44:55', 'Patio Sensor', 'door_sensor', 'Back Patio', 'open', NULL, NULL),
 
 -- Windows
-('window_u1v2w3x4', '00:1A:22:33:44:55', 'Double Pane Sensor', 'window_sensor', 'Living Room', 'movie', 'closed', NULL, NULL),
-('window_y5z6a7b8', '00:1A:22:33:44:55', 'Bay Window Sensor', 'window_sensor', 'Dining Room', 'learning', 'closed', NULL, NULL),
-('window_c9d0e1f2', '00:1A:22:33:44:55', 'Basement Egress Sensor', 'window_sensor', 'Basement', 'sleep', 'open', NULL, NULL),
-('window_g3h4i5j6', '00:1A:22:33:44:55', 'Transom Sensor', 'window_sensor', 'Entryway', 'away', 'closed', NULL, NULL);
+('window_u1v2w3x4', '00:1A:22:33:44:55', 'Double Pane Sensor', 'window_sensor', 'Living Room', 'closed', NULL, NULL),
+('window_y5z6a7b8', '00:1A:22:33:44:55', 'Bay Window Sensor', 'window_sensor', 'Dining Room', 'closed', NULL, NULL),
+('window_c9d0e1f2', '00:1A:22:33:44:55', 'Basement Egress Sensor', 'window_sensor', 'Basement', 'open', NULL, NULL),
+('window_g3h4i5j6', '00:1A:22:33:44:55', 'Transom Sensor', 'window_sensor', 'Entryway', 'closed', NULL, NULL);
 
 -- Event Log (MAC address home_id)
 INSERT INTO event_log (home_id, device_id, event_type, old_state, new_state, read, created_at) VALUES

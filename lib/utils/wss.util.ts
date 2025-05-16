@@ -119,10 +119,9 @@ export async function connectWss(): Promise<MqttClient | null> {
         reject(new Error(`WSS connection timeout to ${config.url}`));
       }, options.connectTimeout);
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       newClient.on("connect", (_connack) => {
         clearTimeout(connectionTimeoutTimer);
-        const connectDuration = Date.now() - connectionPromiseStartTime;
+        const _connectDuration = Date.now() - connectionPromiseStartTime;
         wssClient = newClient;
         isWssConnecting = false;
 

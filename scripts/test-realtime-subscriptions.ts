@@ -41,6 +41,7 @@ async function setupMockDevice(): Promise<void> {
         name: "Mock Drizzle Test Device",
         type: "sensor",
         currentState: "idle",
+        location: "Test Room", // Required for device schema
         // createdAt and lastUpdated have defaultNow(), so not explicitly set here
       });
       console.log(`Mock device ${MOCK_DEVICE_ID} created with Drizzle.`);

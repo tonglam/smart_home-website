@@ -133,7 +133,6 @@ export async function connectMqtt(): Promise<MqttClient | null> {
         reject(new Error(`MQTTS connection timeout to ${config.url}`));
       }, options.connectTimeout);
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       newClient.on("connect", (_connack) => {
         clearTimeout(connectionTimeoutTimer);
         client = newClient;

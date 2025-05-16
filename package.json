@@ -2,6 +2,7 @@
   "name": "smart-home",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "A modern smart home monitoring dashboard using Next.js, Tailwind CSS, and ShadCN/UI. Features real-time device status, alerts, energy monitoring, and automation controls with MQTT communication and Supabase database.",
   "author": "Qitong Lan",
   "license": "MIT",
@@ -85,6 +86,7 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.15.17",
     "@types/pg": "^8.15.1",

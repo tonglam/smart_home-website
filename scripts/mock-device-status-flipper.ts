@@ -37,6 +37,7 @@ async function ensureMockFlipperDevice(): Promise<void> {
         name: "Mock Flipper Door Sensor",
         type: "door_sensor", // Important for SecuritySection to pick it up
         currentState: "closed", // Initial state
+        location: "Front Door", // Required for device schema
         // CreatedAt and lastUpdated have defaultNow()
       };
       await db.insert(devices).values(newDevice);

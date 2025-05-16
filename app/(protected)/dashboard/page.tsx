@@ -49,7 +49,12 @@ export default async function DashboardPage(props: {
     }
 
     const rawData = await fetchData(homeId);
-    const dashboardData = transformData(rawData, homeId, userDisplayName);
+    const dashboardData = await transformData(
+      rawData,
+      homeId,
+      user.id,
+      userDisplayName
+    );
 
     return <Dashboard data={dashboardData} searchParams={searchParams} />;
   } catch (error) {

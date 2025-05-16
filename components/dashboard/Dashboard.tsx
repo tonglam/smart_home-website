@@ -3,9 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import type { DashboardData, TabValue } from "@/types/dashboard.types";
 import { Suspense } from "react";
-import { AnalyticsTab } from "./analytics/AnalyticsTab";
-import { MonitoringTab } from "./monitoring/MonitoringTab";
 import { OverviewTab } from "./overview/OverviewTab";
+import { DynamicTabs } from "./tabs/DynamicTabs";
 import { TabContentWrapper } from "./tabs/TabContentWrapper";
 import { DashboardTabNavigation } from "./tabs/TabNavigation";
 import { TabSkeleton } from "./tabs/TabSkeleton";
@@ -37,7 +36,7 @@ export function Dashboard({ data, searchParams }: DashboardProps) {
           </div>
 
           <div className="relative min-h-[400px]">
-            {/* Use separate Suspense boundaries for each tab to allow individual loading */}
+            {/* Overview Tab - Server rendered by default */}
             <TabContentWrapper activeTab={activeTab} targetTab="overview">
               <Suspense fallback={<TabSkeleton type="overview" />}>
                 <TabsContent
@@ -55,27 +54,8 @@ export function Dashboard({ data, searchParams }: DashboardProps) {
               </Suspense>
             </TabContentWrapper>
 
-            <TabContentWrapper activeTab={activeTab} targetTab="monitoring">
-              <Suspense fallback={<TabSkeleton type="monitoring" />}>
-                <TabsContent
-                  value="monitoring"
-                  className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <MonitoringTab alerts={data.alerts} />
-                </TabsContent>
-              </Suspense>
-            </TabContentWrapper>
-
-            <TabContentWrapper activeTab={activeTab} targetTab="analytics">
-              <Suspense fallback={<TabSkeleton type="analytics" />}>
-                <TabsContent
-                  value="analytics"
-                  className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
-                >
-                  <AnalyticsTab />
-                </TabsContent>
-              </Suspense>
-            </TabContentWrapper>
+            {/* Client-side rendered tabs */}
+            <DynamicTabs activeTab={activeTab} alerts={data.alerts} />
           </div>
         </Tabs>
 

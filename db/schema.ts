@@ -12,8 +12,7 @@ export const devices = pgTable("devices", {
   homeId: text("home_id").notNull(),
   name: text("name").notNull(),
   type: text("type").notNull(),
-  location: text("location"),
-  mode: text("mode"),
+  location: text("location").notNull(),
   currentState: text("current_state").notNull(),
   brightness: integer("brightness"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -24,6 +23,7 @@ export const userHomes = pgTable("user_homes", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
   homeId: text("home_id").notNull(),
+  mode: text("mode").notNull().default("home"),
   email: text("email").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

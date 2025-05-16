@@ -8,8 +8,7 @@ CREATE TABLE devices (
     home_id TEXT NOT NULL,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    location TEXT,
-    mode TEXT,
+    location TEXT NOT NULL,
     current_state TEXT NOT NULL,
     brightness INTEGER,
     temperature INTEGER,
@@ -21,6 +20,7 @@ CREATE TABLE user_homes (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,             
     home_id TEXT NOT NULL,             
+    mode TEXT NOT NULL DEFAULT 'home',
     email TEXT NOT NULL,               
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, home_id)           

@@ -2,19 +2,18 @@
 
 import { AutomationMode } from "@/app/actions/dashboard/automation.action";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/utils";
-import { BookOpenIcon, FilmIcon, HomeIcon } from "lucide-react";
-import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Film, Home } from "lucide-react";
+import { toast } from "sonner";
 
 const iconComponents = {
-  Home: HomeIcon,
-  Film: FilmIcon,
-  BookOpen: BookOpenIcon,
+  Home,
+  Film,
 } as const;
 
 interface AutomationModeCardProps {
   mode: AutomationMode;
-  currentMode: string | null;
+  currentMode: string;
   isLoading: boolean;
   handleModeToggle: (mode: AutomationMode) => Promise<void>;
 }
@@ -25,76 +24,45 @@ export function AutomationModeCard({
   isLoading,
   handleModeToggle,
 }: AutomationModeCardProps) {
-  const [isToggling, setIsToggling] = useState(false);
-
   const isActive = mode.id === currentMode;
-  const optimisticIsActive = isToggling ? !isActive : isActive;
-  const isDisabled = isLoading || isToggling;
 
+  // Get the icon component based on the mode's icon name
   const IconComponent =
-    iconComponents[mode.icon as keyof typeof iconComponents];
+    iconComponents[mode.icon as keyof typeof iconComponents] || null;
 
   const handleClick = async () => {
-    if (isDisabled) return;
-
-    setIsToggling(true);
+    if (isLoading) return;
     try {
       await handleModeToggle(mode);
     } catch (error) {
       console.error("Failed to toggle mode:", error);
-    } finally {
-      setIsToggling(false);
+      toast.error("Failed to toggle mode. Please try again.");
     }
   };
 
   return (
-    <div
-      className={cn(
-        "p-4 rounded-lg border transition-all",
-        optimisticIsActive
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/50",
-        isDisabled && "opacity-60 cursor-not-allowed"
-      )}
+    <Card
+      className={`relative overflow-hidden transition-colors ${
+        isActive ? "border-primary" : ""
+      }`}
     >
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        <div
-          className={cn(
-            "p-2 rounded-full shrink-0 mt-0.5",
-            optimisticIsActive
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted"
-          )}
-        >
-          <IconComponent className="h-4 w-4" />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 space-y-1">
+      <CardHeader className="space-y-1">
+        <CardTitle className="flex items-center gap-2 text-lg font-medium">
+          {IconComponent && <IconComponent className="h-5 w-5" />}
           <div className="font-medium">{mode.name}</div>
-          <div className="text-sm text-muted-foreground">
-            {mode.description}
-          </div>
-        </div>
-
-        {/* Action button */}
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">{mode.description}</p>
+      </CardHeader>
+      <CardContent>
         <Button
-          variant={optimisticIsActive ? "default" : "outline"}
-          size="sm"
-          disabled={isDisabled}
+          variant={isActive ? "default" : "outline"}
+          className="w-full"
           onClick={handleClick}
-          className="shrink-0 self-start"
+          disabled={isLoading || isActive}
         >
-          {isToggling
-            ? isActive
-              ? "Deactivating..."
-              : "Activating..."
-            : optimisticIsActive
-              ? "Active"
-              : "Enable"}
+          {isActive ? "Active" : "Switch to this mode"}
         </Button>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

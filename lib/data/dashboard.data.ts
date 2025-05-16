@@ -1,22 +1,26 @@
 import {
+  db,
   fetchAlertsByHomeId,
   fetchDevicesByHomeId,
   fetchRecentHomeEvents,
+  getHomeMode,
 } from "@/db/db";
-import { AlertLog, Device, EventLog } from "@/db/schema";
-import { formatRelativeTime } from "@/lib/utils/date.util";
 import {
-  automationModes,
-  DEFAULT_BRIGHTNESS,
-  DEFAULT_TEMPERATURE,
-} from "@/lib/utils/defaults.util";
+  devices as devicesTable,
+  type AlertLog,
+  type Device,
+  type EventLog,
+} from "@/db/schema";
+import { formatRelativeTime } from "@/lib/utils/date.util";
+import { automationModes, DEFAULT_BRIGHTNESS } from "@/lib/utils/defaults.util";
 import type {
   Activity,
   Alert,
   DashboardData,
   Light,
   SecurityPoint,
-} from "@/types";
+} from "@/types/dashboard.types";
+import { and, eq } from "drizzle-orm";
 
 interface RawData {
   devices: Device[];
@@ -51,11 +55,9 @@ const transformToLight = (device: Device): Light => {
     id: device.id,
     homeId: device.homeId,
     name: device.name,
-    location: device.location || "",
-    mode: device.mode || "",
+    location: device.location,
     isOn: device.currentState === "on",
-    brightness: DEFAULT_BRIGHTNESS,
-    temperature: DEFAULT_TEMPERATURE,
+    brightness: device.brightness || DEFAULT_BRIGHTNESS,
   };
 };
 
@@ -121,12 +123,16 @@ const transformToActivity = (
   };
 };
 
-export const transformData = (
+export const transformData = async (
   rawData: RawData,
   homeId: string,
+  userId: string,
   userDisplayName: string
-): DashboardData => {
+): Promise<DashboardData> => {
   const { devices, events, alerts } = rawData;
+
+  // Get current mode from userHomes
+  const currentMode = await getHomeMode(userId, homeId);
 
   // device name mapping
   const deviceNameMap = devices.reduce(
@@ -140,10 +146,6 @@ export const transformData = (
   const lightDevicesData = devices
     .filter((device) => device.type === "light")
     .map(transformToLight);
-
-  const deviceMode = lightDevicesData[0]?.mode || "";
-  const currentMode =
-    automationModes.find((mode) => mode.id === deviceMode)?.id || "";
 
   // security points data
   const securityPointsData = devices
@@ -180,10 +182,47 @@ export const getDefaultDashboardData = (
 ): DashboardData => ({
   lightDevices: [],
   securityPoints: [],
-  automationModes: [],
-  currentMode: "",
+  automationModes: [...automationModes],
+  currentMode: "home",
   alerts: [],
   activities: [],
   homeId: "",
   userDisplayName,
 });
+
+export async function getLightDevices(homeId: string): Promise<Device[]> {
+  try {
+    const result = await db
+      .select()
+      .from(devicesTable)
+      .where(
+        and(eq(devicesTable.homeId, homeId), eq(devicesTable.type, "light"))
+      );
+    return result;
+  } catch (error) {
+    console.error("Error in getLightDevices:", error);
+    throw error;
+  }
+}
+
+export async function getLightingData(homeId: string) {
+  try {
+    const lightDevicesData = await getLightDevices(homeId);
+
+    return {
+      devices: lightDevicesData.map((device) => ({
+        id: device.id,
+        name: device.name,
+        type: device.type,
+        location: device.location,
+        currentState: device.currentState,
+        brightness: device.brightness || DEFAULT_BRIGHTNESS,
+      })),
+    };
+  } catch (error) {
+    console.error("Error in getLightingData:", error);
+    return {
+      devices: [],
+    };
+  }
+}

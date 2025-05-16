@@ -7,46 +7,56 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function useAutomation(
-  initialCurrentMode: string | null,
-  homeId: string
-) {
-  const [optimisticCurrentMode, setOptimisticCurrentMode] = useState<
-    string | null
-  >(initialCurrentMode);
+interface UseAutomationProps {
+  homeId: string;
+  userId: string;
+  initialCurrentMode: string | null;
+}
+
+export function useAutomation({
+  homeId,
+  userId,
+  initialCurrentMode,
+}: UseAutomationProps) {
+  const [optimisticCurrentMode, setOptimisticCurrentMode] = useState<string>(
+    initialCurrentMode || "home"
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleModeToggle = async (clickedMode: AutomationMode) => {
-    if (!homeId || isLoading) {
-      console.log("(Hook) Exiting early due to missing homeId or isLoading.");
-      return;
-    }
-
-    const originalMode = optimisticCurrentMode;
-    const isClickedModeCurrentlyActive = clickedMode.id === originalMode;
-    const optimisticNextMode = isClickedModeCurrentlyActive
-      ? null
-      : clickedMode.id;
-
-    setOptimisticCurrentMode(optimisticNextMode);
+    if (isLoading) return;
     setIsLoading(true);
 
+    const originalMode = optimisticCurrentMode;
+
     try {
-      const success = await toggleAutomationMode(homeId, optimisticNextMode);
+      // If clicking the currently active mode, do nothing since we need one mode active
+      if (clickedMode.id === originalMode) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Set the new mode optimistically
+      setOptimisticCurrentMode(clickedMode.id);
+
+      // Call server action to update mode
+      const success = await toggleAutomationMode(
+        homeId,
+        userId,
+        clickedMode.id
+      );
 
       if (!success) {
         throw new Error("Server action failed to toggle mode.");
       }
 
-      if (isClickedModeCurrentlyActive) {
-        toast.success(`${clickedMode.name} deactivated`);
-      } else {
-        toast.success(`Mode set to ${clickedMode.name}`);
-      }
+      toast.success(`Mode set to ${clickedMode.name}`);
     } catch (error) {
       console.error("(Hook) Error toggling mode catch block:", error);
       setOptimisticCurrentMode(originalMode);
-      toast.error(`Failed to toggle ${clickedMode.name}. Reverted change.`);
+      toast.error(
+        `Failed to set mode to ${clickedMode.name}. Reverted change.`
+      );
     } finally {
       setIsLoading(false);
     }

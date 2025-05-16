@@ -173,9 +173,8 @@ export function OverviewTab({
         {/* Automation Section - Takes 1/3 of space on larger screens */}
         <div>
           <AutomationSection
-            lightDevices={lightDevices}
             modes={automationModes}
-            currentMode={currentMode}
+            currentMode={currentMode || "home"}
             homeId={homeId}
           />
         </div>
