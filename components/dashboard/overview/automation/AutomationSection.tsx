@@ -24,8 +24,8 @@ export function AutomationSection({
     initialCurrentMode,
   });
 
-  // Show skeleton while auth is loading or during client-side loading
-  if (!isLoaded || isLoading) {
+  // Show skeleton while auth is loading
+  if (!isLoaded) {
     return (
       <div className="space-y-4">
         {[1, 2].map((i) => (
@@ -47,7 +47,7 @@ export function AutomationSection({
           key={mode.id}
           mode={mode}
           currentMode={optimisticCurrentMode || "home"}
-          isLoading={false}
+          isLoading={isLoading}
           handleModeToggle={handleModeToggle}
         />
       ))}

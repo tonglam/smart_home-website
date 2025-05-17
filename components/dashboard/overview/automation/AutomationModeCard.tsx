@@ -3,6 +3,7 @@
 import { AutomationMode } from "@/app/actions/dashboard/automation.action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Film, Home } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,6 +40,10 @@ export function AutomationModeCard({
       toast.error("Failed to toggle mode. Please try again.");
     }
   };
+
+  if (isLoading) {
+    return <Skeleton className="h-[150px] w-full rounded-lg" />;
+  }
 
   return (
     <Card
