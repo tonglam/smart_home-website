@@ -18,10 +18,11 @@ const DynamicMonitoringTab = dynamic(
 
 interface DynamicTabsProps {
   activeTab: TabValue;
+  homeId: string;
   alerts: Alert[];
 }
 
-export function DynamicTabs({ activeTab, alerts }: DynamicTabsProps) {
+export function DynamicTabs({ activeTab, homeId, alerts }: DynamicTabsProps) {
   return (
     <>
       {/* Monitoring Tab - Client-side only */}
@@ -31,7 +32,7 @@ export function DynamicTabs({ activeTab, alerts }: DynamicTabsProps) {
             value="monitoring"
             className="space-y-6 focus-visible:outline-none focus-visible:ring-0"
           >
-            <DynamicMonitoringTab alerts={alerts} />
+            <DynamicMonitoringTab homeId={homeId} alerts={alerts} />
           </TabsContent>
         </Suspense>
       </TabContentWrapper>

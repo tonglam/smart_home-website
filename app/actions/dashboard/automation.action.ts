@@ -4,6 +4,7 @@ import { updateHomeMode } from "@/db/db";
 import { automationModes } from "@/lib/utils/defaults.util";
 import { publishMessage } from "@/lib/utils/mqtt.util";
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 export type AutomationMode = (typeof automationModes)[number];
 
@@ -43,6 +44,9 @@ export async function toggleAutomationMode(
         );
       }
     }
+
+    revalidatePath("/dashboard");
+
     return result.success;
   } catch (error) {
     console.error("[Action] Error toggling automation mode:", error);

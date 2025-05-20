@@ -357,3 +357,25 @@ export const createOrUpdateUserHomeConnection = async (
     throw error;
   }
 };
+
+export const fetchCameraByHomeId = async (
+  homeId: string
+): Promise<(Device & { status: string | null }) | null> => {
+  try {
+    const [cameraDevice] = await db
+      .select()
+      .from(devices)
+      .where(and(eq(devices.homeId, homeId), eq(devices.type, "camera")))
+      .limit(1);
+
+    if (!cameraDevice) {
+      return null;
+    }
+
+    return cameraDevice as Device & { status: string | null };
+  } catch (err) {
+    const error = err as Error;
+    console.error("[fetchCameraByHomeId] Error:", error);
+    throw error;
+  }
+};

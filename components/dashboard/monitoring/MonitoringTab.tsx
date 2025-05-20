@@ -4,10 +4,11 @@ import { RecordingReview } from "@/components/dashboard/monitoring/RecordingRevi
 import type { Alert } from "@/types/dashboard.types";
 
 interface MonitoringTabProps {
+  homeId: string;
   alerts: Alert[];
 }
 
-export function MonitoringTab({ alerts }: MonitoringTabProps) {
+export function MonitoringTab({ homeId, alerts }: MonitoringTabProps) {
   const videoUrl =
     "https://pub-eb511340529f448cbad68bb2667a12aa.r2.dev/recording.mp4";
 
@@ -17,7 +18,7 @@ export function MonitoringTab({ alerts }: MonitoringTabProps) {
       <AlertCardContainer alerts={alerts} />
 
       {/* Camera Section */}
-      <CameraFeed />
+      <CameraFeed homeId={homeId} />
 
       {/* Video Recording Review */}
       <RecordingReview videoUrl={videoUrl} />

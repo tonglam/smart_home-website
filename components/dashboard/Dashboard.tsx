@@ -56,7 +56,11 @@ export function Dashboard({ data, searchParams }: DashboardProps) {
             </TabContentWrapper>
 
             {/* Client-side rendered tabs */}
-            <DynamicTabs activeTab={activeTab} alerts={data.alerts} />
+            <DynamicTabs
+              homeId={data.homeId}
+              activeTab={activeTab}
+              alerts={data.alerts}
+            />
           </div>
         </Tabs>
 
