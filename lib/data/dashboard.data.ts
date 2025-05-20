@@ -104,11 +104,15 @@ const transformToSecurityPoint = (
     | "lux_sensor"
     | "led_light"
 ): SecurityPoint => {
+  let status = device.currentState || "unknown";
+  if (pointType === "camera") {
+    status = status === "online" ? "online" : "offline";
+  }
   return {
     id: device.id,
     name: device.name,
     type: pointType,
-    status: device.currentState || "unknown",
+    status: status,
     lastUpdated: device.lastUpdated?.toISOString() || "",
     icon: pointType === "motion" ? "device" : pointType,
   };

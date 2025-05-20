@@ -72,10 +72,7 @@ const transformPayloadToSecurityPoint = (
     } else if (securityType === "led_light") {
       status = state === "on" || state === "active" ? "on" : "off";
     } else if (securityType === "camera") {
-      status =
-        state === "recording" || state === "online" || state === "active"
-          ? "recording"
-          : "idle";
+      status = state === "online" ? "online" : "offline";
     } else {
       status = state; // Use the state directly for other types or refine as needed
     }

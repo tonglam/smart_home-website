@@ -24,7 +24,6 @@ const getStatusBadgeClasses = (status: string): string => {
       "secure",
       "no_motion",
       "off",
-      "idle",
       "inactive",
       "none",
       "locked",
@@ -64,8 +63,13 @@ const getStatusBadgeClasses = (status: string): string => {
   }
 
   // Informational/Active states (Blue)
-  if (["online", "active", "recording"].includes(s)) {
+  if (["online"].includes(s)) {
     return "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-700 dark:text-blue-100 dark:border-blue-600";
+  }
+
+  // Offline/Unavailable (Slate Gray)
+  if (["offline"].includes(s)) {
+    return "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:border-slate-500";
   }
 
   // Default for unknown/unavailable statuses (Slate Gray)
