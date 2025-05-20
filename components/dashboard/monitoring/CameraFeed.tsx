@@ -95,7 +95,7 @@ export function CameraFeed() {
       unsubscribeFromTopic(CAMERA_TOPIC, messageHandler)
         .then((unsubscribed) => {
           if (unsubscribed) {
-            console.error(
+            console.log(
               "[CameraFeed] Cleaned up: Unsubscribed from camera topic:",
               CAMERA_TOPIC
             );

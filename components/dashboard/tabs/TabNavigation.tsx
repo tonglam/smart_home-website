@@ -23,10 +23,8 @@ export function DashboardTabNavigation() {
     params.set("tab", value);
     router.push(`?${params.toString()}`);
 
-    setTimeout(() => {
-      setIsChangingTab(false);
-      setLoadingTab(null);
-    }, 50); // Adjust timing as needed
+    setIsChangingTab(false);
+    setLoadingTab(null);
   };
 
   return (

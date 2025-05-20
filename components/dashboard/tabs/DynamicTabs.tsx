@@ -7,7 +7,6 @@ import { Suspense } from "react";
 import { TabContentWrapper } from "./TabContentWrapper";
 import { TabSkeleton } from "./TabSkeleton";
 
-// Dynamically import tabs with no SSR
 const DynamicAnalyticsTab = dynamic(
   () => import("../analytics/AnalyticsTab").then((mod) => mod.AnalyticsTab),
   { ssr: false }

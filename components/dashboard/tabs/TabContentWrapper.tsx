@@ -10,11 +10,6 @@ interface TabContentWrapperProps {
   targetTab: TabValue;
 }
 
-/**
- * Client-side wrapper to efficiently handle tab content rendering
- * This avoids constantly re-rendering inactive tabs
- * while providing immediate visual feedback
- */
 export function TabContentWrapper({
   children,
   activeTab,
@@ -24,28 +19,17 @@ export function TabContentWrapper({
   const isActive = activeTab === targetTab;
 
   useEffect(() => {
-    // When this tab becomes active, render it
     if (isActive) {
       setShouldRender(true);
-    }
-
-    // If was active but now isn't, hide it after delay
-    // This allows animations to complete
-    if (!isActive && shouldRender) {
-      const timer = setTimeout(() => {
-        setShouldRender(false);
-      }, 500); // Keep content around briefly to allow animations
-
-      return () => clearTimeout(timer);
+    } else if (shouldRender) {
+      setShouldRender(false);
     }
   }, [isActive, shouldRender]);
 
-  // Conditionally render based on whether this tab is or was recently active
   if (!shouldRender) {
     return null;
   }
 
-  // Show content with conditional styling
   return (
     <div
       className={cn(

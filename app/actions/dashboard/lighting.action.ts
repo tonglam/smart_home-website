@@ -19,52 +19,73 @@ export async function updateLightState(
       return false;
     }
 
-    const oldState = currentDevice.currentState;
-    const newState = updates.currentState ?? oldState;
+    let newBrightness =
+      updates.brightness !== undefined
+        ? updates.brightness
+        : (currentDevice.brightness ?? 0);
 
-    const updatePayload: Partial<Device> = {
-      currentState: newState,
-      brightness: updates.brightness,
-    };
+    let newDbState = updates.currentState;
 
-    Object.keys(updatePayload).forEach(
-      (key) =>
-        updatePayload[key as keyof typeof updatePayload] === undefined &&
-        delete updatePayload[key as keyof typeof updatePayload]
-    );
-
-    const updateResult = await updateDeviceById(deviceId, updatePayload);
-
-    if (!updateResult.success || !updateResult.data) {
-      console.error("Failed to update device:", updateResult.error);
-      return false;
+    if (updates.brightness !== undefined && updates.brightness !== null) {
+      if (updates.brightness > 0) {
+        newDbState = "on";
+      } else {
+        newDbState = "off";
+      }
+    } else if (newDbState === undefined) {
+      newDbState = currentDevice.currentState;
     }
 
-    if (oldState !== newState) {
+    if (newDbState === "off") {
+      newBrightness = 0;
+    } else if (newDbState === "on" && newBrightness === 0) {
+      newBrightness = 100;
+    }
+
+    const oldDbState = currentDevice.currentState;
+    const oldDbBrightness = currentDevice.brightness ?? 0;
+
+    const updatePayloadForDb: Partial<Device> = {};
+
+    if (newDbState !== oldDbState) {
+      updatePayloadForDb.currentState = newDbState;
+    }
+
+    if (newBrightness !== null && newBrightness !== oldDbBrightness) {
+      updatePayloadForDb.brightness = newBrightness;
+    }
+
+    if (Object.keys(updatePayloadForDb).length > 0) {
+      const updateResult = await updateDeviceById(deviceId, updatePayloadForDb);
+      if (!updateResult.success || !updateResult.data) {
+        console.error("Failed to update device:", updateResult.error);
+        return false;
+      }
+    }
+
+    if (newDbState !== oldDbState) {
       const eventLog: Omit<EventLog, "id" | "createdAt"> = {
         deviceId,
         homeId,
         eventType: "state_change",
-        oldState: oldState,
-        newState: newState,
+        oldState: oldDbState ?? "unknown",
+        newState: newDbState!,
         read: false,
       };
       await createEvent(eventLog);
     }
 
-    const payload = {
+    const mqttPayload = {
       homeId: homeId,
       type: "light",
       deviceId: deviceId,
-      state: newState,
-      ...(updates.brightness !== undefined && {
-        brightness: updates.brightness,
-      }),
+      state: newDbState!,
+      brightness: newBrightness!,
       createdAt: new Date().toISOString(),
     };
 
     try {
-      const published = await publishMessage("control", payload);
+      const published = await publishMessage("control", mqttPayload);
       if (!published) {
         console.error("Failed to publish MQTT message for light update.");
       }
@@ -72,7 +93,6 @@ export async function updateLightState(
       console.error("Error publishing MQTT message:", mqttError);
     }
 
-    // 5. Revalidate the dashboard page
     revalidatePath("/dashboard");
 
     return true;

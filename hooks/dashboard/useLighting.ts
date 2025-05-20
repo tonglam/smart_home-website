@@ -2,8 +2,22 @@
 
 import { updateLightState } from "@/app/actions/dashboard/lighting.action";
 import type { Light } from "@/types";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+const removePendingUpdateWithDelay = (
+  setPendingUpdates: React.Dispatch<React.SetStateAction<Set<string>>>,
+  id: string,
+  delayMs: number = 2000
+) => {
+  setTimeout(() => {
+    setPendingUpdates((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, delayMs);
+};
 
 export function useLighting(homeId: string, initialLights: Light[] = []) {
   const [lights, setLights] = useState<Light[]>(initialLights);
@@ -34,81 +48,116 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
           lights.map((l) => (l.id === id ? { ...l, isOn: light.isOn } : l))
         );
         toast.error("Failed to update light state");
+
+        setPendingUpdates((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
       } else {
         toast.success(`${light.name} toggled successfully.`);
+
+        removePendingUpdateWithDelay(setPendingUpdates, id);
       }
     } catch (error) {
       setLights(
         lights.map((l) => (l.id === id ? { ...l, isOn: light.isOn } : l))
       );
       toast.error("Error updating light state");
-    } finally {
+
       setPendingUpdates((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
       });
+      console.error("Toggle light error:", error);
     }
   };
 
-  const adjustBrightness = async (id: string, value: number) => {
-    const light = lights.find((l) => l.id === id);
-    if (!light) {
-      toast.error("Light device not found");
-      return;
-    }
+  const adjustBrightness = useCallback(
+    async (id: string, value: number) => {
+      const light = lights.find((l) => l.id === id);
+      if (!light) {
+        toast.error("Light device not found");
+        return;
+      }
 
-    const newBrightness = Math.max(0, Math.min(100, Math.round(value)));
+      const newBrightness = Math.max(0, Math.min(100, Math.round(value)));
+      const newIsOn = newBrightness > 0;
 
-    if (light.brightness === newBrightness || pendingUpdates.has(id)) {
-      return;
-    }
+      if (light.brightness === newBrightness || pendingUpdates.has(id)) {
+        return;
+      }
 
-    const originalBrightness = light.brightness;
+      const originalBrightness = light.brightness;
+      const originalIsOn = light.isOn;
 
-    try {
-      setPendingUpdates((prev) => new Set(prev).add(id));
+      try {
+        setPendingUpdates((prev) => new Set(prev).add(id));
 
-      setLights(
-        lights.map((l) =>
-          l.id === id ? { ...l, brightness: newBrightness } : l
-        )
-      );
-
-      const success = await updateLightState(id, homeId, {
-        brightness: newBrightness,
-      });
-
-      if (!success) {
         setLights(
           lights.map((l) =>
-            l.id === id ? { ...l, brightness: originalBrightness } : l
+            l.id === id ? { ...l, brightness: newBrightness, isOn: newIsOn } : l
           )
         );
-        toast.error(`Failed to update brightness for ${light.name}`);
-      } else {
-        toast.success(`Brightness updated for ${light.name}`);
+
+        const success = await updateLightState(id, homeId, {
+          brightness: newBrightness,
+          ...(newIsOn !== originalIsOn && {
+            currentState: newIsOn ? "on" : "off",
+          }),
+        });
+
+        if (!success) {
+          setLights(
+            lights.map((l) =>
+              l.id === id
+                ? { ...l, brightness: originalBrightness, isOn: originalIsOn }
+                : l
+            )
+          );
+          toast.error(`Failed to update brightness for ${light.name}`);
+
+          setPendingUpdates((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        } else {
+          toast.success(`Brightness updated for ${light.name}`);
+
+          removePendingUpdateWithDelay(setPendingUpdates, id);
+        }
+      } catch (error) {
+        setLights(
+          lights.map((l) =>
+            l.id === id
+              ? { ...l, brightness: originalBrightness, isOn: originalIsOn }
+              : l
+          )
+        );
+        toast.error(`Error updating brightness for ${light.name}`);
+
+        setPendingUpdates((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        console.error("Adjust brightness error:", error);
       }
-    } catch (error) {
-      setLights(
-        lights.map((l) =>
-          l.id === id ? { ...l, brightness: originalBrightness } : l
-        )
-      );
-      toast.error(`Error updating brightness for ${light.name}`);
-    } finally {
-      setPendingUpdates((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
-  };
+    },
+    [homeId, lights, pendingUpdates]
+  );
+
+  const pendingUpdatesArray = useMemo(
+    () => Array.from(pendingUpdates),
+    [pendingUpdates]
+  );
 
   return {
     lights,
     toggleLight,
     adjustBrightness,
-    pendingUpdates: Array.from(pendingUpdates),
+    pendingUpdates: pendingUpdatesArray,
   };
 }

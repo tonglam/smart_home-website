@@ -16,17 +16,15 @@ export function TabTransition({
 }: TabTransitionProps) {
   const [rendered, setRendered] = useState(isVisible);
 
-  // Handle the visibility change
   useEffect(() => {
     if (isVisible) {
       setRendered(true);
     }
 
-    // If hiding, we'll let the animation play before removing from DOM
     if (!isVisible) {
       const timer = setTimeout(() => {
         setRendered(false);
-      }, 300); // Match the duration of the animation
+      }, 300);
 
       return () => clearTimeout(timer);
     }

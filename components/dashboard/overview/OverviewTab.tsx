@@ -1,11 +1,12 @@
 "use client";
 
 import { AutomationSection } from "@/components/dashboard/overview/automation/AutomationSection";
-import { LightingSection } from "@/components/dashboard/overview/lighting/LightingSection";
+import { ControlSection } from "@/components/dashboard/overview/control/ControlSection";
 import { SecuritySection } from "@/components/dashboard/overview/security/SecuritySection";
 import { subscribeToTableChanges, supabase } from "@/lib/utils/supabase.util";
 import type {
   AutomationMode,
+  Camera,
   Light,
   SecurityPoint,
 } from "@/types/dashboard.types";
@@ -60,6 +61,7 @@ const transformPayloadToSecurityPoint = (
 
 interface OverviewTabProps {
   lightDevices: Light[];
+  cameraDevices: Camera[];
   automationModes: AutomationMode[];
   currentMode: string;
   securityPoints: SecurityPoint[];
@@ -68,6 +70,7 @@ interface OverviewTabProps {
 
 export function OverviewTab({
   lightDevices,
+  cameraDevices,
   automationModes,
   currentMode,
   securityPoints: initialSecurityPoints,
@@ -167,7 +170,11 @@ export function OverviewTab({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Lighting Section - Takes 2/3 of space on larger screens */}
         <div className="lg:col-span-2">
-          <LightingSection lightDevices={lightDevices} homeId={homeId} />
+          <ControlSection
+            lightDevices={lightDevices}
+            cameraDevices={cameraDevices}
+            homeId={homeId}
+          />
         </div>
 
         {/* Automation Section - Takes 1/3 of space on larger screens */}

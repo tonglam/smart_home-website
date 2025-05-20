@@ -9,13 +9,11 @@ import { toast } from "sonner";
 
 interface UseAutomationProps {
   homeId: string;
-  userId: string;
   initialCurrentMode: string | null;
 }
 
 export function useAutomation({
   homeId,
-  userId,
   initialCurrentMode,
 }: UseAutomationProps) {
   const [optimisticCurrentMode, setOptimisticCurrentMode] = useState<string>(
@@ -30,21 +28,14 @@ export function useAutomation({
     const originalMode = optimisticCurrentMode;
 
     try {
-      // If clicking the currently active mode, do nothing since we need one mode active
       if (clickedMode.id === originalMode) {
         setIsLoading(false);
         return;
       }
 
-      // Set the new mode optimistically
       setOptimisticCurrentMode(clickedMode.id);
 
-      // Call server action to update mode
-      const success = await toggleAutomationMode(
-        homeId,
-        userId,
-        clickedMode.id
-      );
+      const success = await toggleAutomationMode(homeId, clickedMode.id);
 
       if (!success) {
         throw new Error("Server action failed to toggle mode.");

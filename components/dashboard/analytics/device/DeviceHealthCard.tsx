@@ -10,7 +10,6 @@ interface DeviceData {
   name: string;
   status: string;
   battery: string;
-  lastUpdated: string;
 }
 
 const DeviceStatusItem = ({ device }: { device: DeviceData }) => (
@@ -23,9 +22,7 @@ const DeviceStatusItem = ({ device }: { device: DeviceData }) => (
     <div>
       <p className="font-medium text-sm">{device.name}</p>
       <div className="flex gap-2 text-xs text-muted-foreground">
-        <span>Battery: {device.battery}</span>
-        <span>•</span>
-        <span>Updated: {device.lastUpdated}</span>
+        <span>Battery: {device.battery}</span>{" "}
       </div>
     </div>
   </div>
@@ -49,25 +46,21 @@ export function DeviceHealthCard({ className }: DeviceHealthCardProps) {
       name: "Living Room Light",
       status: "Good",
       battery: "100%",
-      lastUpdated: "2 hours ago",
     },
     {
-      name: "Kitchen Motion Sensor",
+      name: "Living Room Ambient Light",
       status: "Warning",
       battery: "15%",
-      lastUpdated: "1 day ago",
     },
     {
-      name: "Front Door Lock",
+      name: "Main Door Lock",
       status: "Good",
       battery: "85%",
-      lastUpdated: "5 hours ago",
     },
     {
-      name: "Office Camera",
+      name: "Security Camera",
       status: "Good",
       battery: "N/A",
-      lastUpdated: "Just now",
     },
   ];
 

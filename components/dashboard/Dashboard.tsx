@@ -45,6 +45,7 @@ export function Dashboard({ data, searchParams }: DashboardProps) {
                 >
                   <OverviewTab
                     lightDevices={data.lightDevices}
+                    cameraDevices={data.cameraDevices}
                     automationModes={data.automationModes}
                     currentMode={data.currentMode}
                     securityPoints={data.securityPoints}

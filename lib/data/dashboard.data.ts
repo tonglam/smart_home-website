@@ -16,6 +16,7 @@ import { automationModes, DEFAULT_BRIGHTNESS } from "@/lib/utils/defaults.util";
 import type {
   Activity,
   Alert,
+  Camera,
   DashboardData,
   Light,
   SecurityPoint,
@@ -61,22 +62,52 @@ const transformToLight = (device: Device): Light => {
   };
 };
 
-const getSecurityPointType = (device: Device): "door" | "window" | "motion" => {
-  return device.type.replace("_sensor", "") as "door" | "window" | "motion";
+const transformToCamera = (device: Device): Camera => {
+  return {
+    id: device.id,
+    homeId: device.homeId,
+    name: device.name,
+    location: device.location,
+    status: device.currentState === "online" ? "online" : "offline",
+  };
 };
 
-const transformToSecurityPoint = (device: Device): SecurityPoint => {
-  const baseType = device.type.replace("_sensor", "") as
+const getSecurityPointType = (
+  deviceType: string
+):
+  | "door"
+  | "window"
+  | "motion"
+  | "reed_switch"
+  | "camera"
+  | "lux_sensor"
+  | null => {
+  if (deviceType === "door_sensor") return "door";
+  if (deviceType === "window_sensor") return "window";
+  if (deviceType === "motion_sensor") return "motion";
+  if (deviceType === "reed_switch") return "reed_switch";
+  if (deviceType === "camera") return "camera";
+  if (deviceType === "lux_sensor") return "lux_sensor";
+  return null;
+};
+
+const transformToSecurityPoint = (
+  device: Device,
+  pointType:
     | "door"
     | "window"
-    | "motion";
+    | "motion"
+    | "reed_switch"
+    | "camera"
+    | "lux_sensor"
+): SecurityPoint => {
   return {
     id: device.id,
     name: device.name,
-    type: baseType,
-    status: (device.currentState || "closed") as "open" | "closed",
+    type: pointType,
+    status: device.currentState || "unknown",
     lastUpdated: device.lastUpdated?.toISOString() || "",
-    icon: baseType === "motion" ? "device" : baseType,
+    icon: pointType === "motion" ? "device" : pointType,
   };
 };
 
@@ -144,16 +175,30 @@ export const transformData = async (
   );
 
   const lightDevicesData = devices
-    .filter((device) => device.type === "light")
+    .filter((device) => device.type === "led_light")
     .map(transformToLight);
+
+  const cameraDevicesData = devices
+    .filter((device) => device.type === "camera")
+    .map(transformToCamera);
 
   // security points data
   const securityPointsData = devices
-    .filter((device) => {
-      const type = getSecurityPointType(device);
-      return type === "door" || type === "window";
+    .map((device) => {
+      const pointType = getSecurityPointType(device.type);
+      if (
+        pointType === "door" ||
+        pointType === "window" ||
+        pointType === "motion" ||
+        pointType === "reed_switch" ||
+        pointType === "camera" ||
+        pointType === "lux_sensor"
+      ) {
+        return transformToSecurityPoint(device, pointType);
+      }
+      return null;
     })
-    .map(transformToSecurityPoint);
+    .filter((point): point is SecurityPoint => point !== null);
 
   const activityData = events.map((event) =>
     transformToActivity(event, deviceNameMap)
@@ -165,6 +210,7 @@ export const transformData = async (
 
   const transformedData = {
     lightDevices: lightDevicesData,
+    cameraDevices: cameraDevicesData,
     automationModes: [...automationModes],
     currentMode,
     securityPoints: securityPointsData,
@@ -181,6 +227,7 @@ export const getDefaultDashboardData = (
   userDisplayName: string
 ): DashboardData => ({
   lightDevices: [],
+  cameraDevices: [],
   securityPoints: [],
   automationModes: [...automationModes],
   currentMode: "home",
@@ -196,8 +243,9 @@ export async function getLightDevices(homeId: string): Promise<Device[]> {
       .select()
       .from(devicesTable)
       .where(
-        and(eq(devicesTable.homeId, homeId), eq(devicesTable.type, "light"))
+        and(eq(devicesTable.homeId, homeId), eq(devicesTable.type, "led_light"))
       );
+    console.log("result", result);
     return result;
   } catch (error) {
     console.error("Error in getLightDevices:", error);

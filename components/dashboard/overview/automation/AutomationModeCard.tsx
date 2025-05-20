@@ -3,7 +3,7 @@
 import { AutomationMode } from "@/app/actions/dashboard/automation.action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils/utils";
 import { Film, Home } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,24 +15,19 @@ const iconComponents = {
 interface AutomationModeCardProps {
   mode: AutomationMode;
   currentMode: string;
-  isLoading: boolean;
   handleModeToggle: (mode: AutomationMode) => Promise<void>;
 }
 
 export function AutomationModeCard({
   mode,
   currentMode,
-  isLoading,
   handleModeToggle,
 }: AutomationModeCardProps) {
   const isActive = mode.id === currentMode;
-
-  // Get the icon component based on the mode's icon name
   const IconComponent =
     iconComponents[mode.icon as keyof typeof iconComponents] || null;
 
   const handleClick = async () => {
-    if (isLoading) return;
     try {
       await handleModeToggle(mode);
     } catch (error) {
@@ -41,15 +36,12 @@ export function AutomationModeCard({
     }
   };
 
-  if (isLoading) {
-    return <Skeleton className="h-[150px] w-full rounded-lg" />;
-  }
-
   return (
     <Card
-      className={`relative overflow-hidden transition-colors ${
-        isActive ? "border-primary" : ""
-      }`}
+      className={cn(
+        "relative overflow-hidden transition-colors",
+        isActive && "border-primary"
+      )}
     >
       <CardHeader className="space-y-1">
         <CardTitle className="flex items-center gap-2 text-lg font-medium">
@@ -63,7 +55,7 @@ export function AutomationModeCard({
           variant={isActive ? "default" : "outline"}
           className="w-full"
           onClick={handleClick}
-          disabled={isLoading || isActive}
+          disabled={isActive}
         >
           {isActive ? "Active" : "Switch to this mode"}
         </Button>
