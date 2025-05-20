@@ -3,6 +3,7 @@ import type { SecurityPoint } from "@/types";
 import {
   MdDeviceHub,
   MdDoorFront,
+  MdLightbulbOutline,
   MdSensors,
   MdVideocam,
   MdWbSunny,
@@ -80,6 +81,7 @@ export function SecurityItem({ point }: SecurityItemProps) {
     reed_switch: MdSensors,
     camera: MdVideocam,
     lux_sensor: MdWbSunny,
+    led_light: MdLightbulbOutline,
   }[point.icon];
 
   const ResolvedIcon = IconComponent || MdDeviceHub;

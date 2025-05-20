@@ -81,6 +81,7 @@ const getSecurityPointType = (
   | "reed_switch"
   | "camera"
   | "lux_sensor"
+  | "led_light"
   | null => {
   if (deviceType === "door_sensor") return "door";
   if (deviceType === "window_sensor") return "window";
@@ -88,6 +89,7 @@ const getSecurityPointType = (
   if (deviceType === "reed_switch") return "reed_switch";
   if (deviceType === "camera") return "camera";
   if (deviceType === "lux_sensor") return "lux_sensor";
+  if (deviceType === "led_light") return "led_light";
   return null;
 };
 
@@ -100,6 +102,7 @@ const transformToSecurityPoint = (
     | "reed_switch"
     | "camera"
     | "lux_sensor"
+    | "led_light"
 ): SecurityPoint => {
   return {
     id: device.id,
@@ -192,7 +195,8 @@ export const transformData = async (
         pointType === "motion" ||
         pointType === "reed_switch" ||
         pointType === "camera" ||
-        pointType === "lux_sensor"
+        pointType === "lux_sensor" ||
+        pointType === "led_light"
       ) {
         return transformToSecurityPoint(device, pointType);
       }

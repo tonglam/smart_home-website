@@ -22,7 +22,8 @@ export type SecurityPointIcon =
   | "device"
   | "reed_switch"
   | "camera"
-  | "lux_sensor";
+  | "lux_sensor"
+  | "led_light";
 
 export type Light = {
   id: string;
@@ -61,7 +62,14 @@ export interface Alert {
 export interface SecurityPoint {
   id: string;
   name: string;
-  type: "door" | "window" | "motion" | "reed_switch" | "camera" | "lux_sensor";
+  type:
+    | "door"
+    | "window"
+    | "motion"
+    | "reed_switch"
+    | "camera"
+    | "lux_sensor"
+    | "led_light";
   status: string;
   lastUpdated: string;
   icon: SecurityPointIcon;

@@ -18,12 +18,24 @@ import { useEffect, useState } from "react";
 
 const getDeviceSecurityType = (
   devicePayload: any
-): "door" | "window" | "motion" | null => {
+):
+  | "door"
+  | "window"
+  | "motion"
+  | "led_light"
+  | "camera"
+  | "lux_sensor"
+  | "reed_switch"
+  | null => {
   if (!devicePayload || typeof devicePayload.type !== "string") return null;
   const type = devicePayload.type.toLowerCase();
   if (type.startsWith("door")) return "door";
   if (type.startsWith("window")) return "window";
   if (type.startsWith("motion")) return "motion";
+  if (type === "led_light") return "led_light";
+  if (type === "camera") return "camera";
+  if (type === "lux_sensor") return "lux_sensor";
+  if (type === "reed_switch") return "reed_switch";
   return null;
 };
 
@@ -31,22 +43,44 @@ const transformPayloadToSecurityPoint = (
   devicePayload: any
 ): SecurityPoint | null => {
   const securityType = getDeviceSecurityType(devicePayload);
-  if (securityType !== "door" && securityType !== "window") {
+
+  // Allow all valid security types that getDeviceSecurityType can return
+  if (!securityType) {
     return null;
   }
-  let status: "open" | "closed" = "closed";
+
+  let status = "unknown"; // Default status
   if (devicePayload.current_state) {
     const state = String(devicePayload.current_state).toLowerCase();
-    if (
-      state === "open" ||
-      state === "unlocked" ||
-      state === "active" ||
-      state === "on" ||
-      state === "triggered"
-    ) {
-      status = "open";
+    if (securityType === "door" || securityType === "window") {
+      status =
+        state === "open" ||
+        state === "unlocked" ||
+        state === "active" ||
+        state === "on" ||
+        state === "triggered"
+          ? "open"
+          : "closed";
+    } else if (securityType === "motion") {
+      status =
+        state === "motion_detected" ||
+        state === "active" ||
+        state === "on" ||
+        state === "triggered"
+          ? "motion_detected"
+          : "no_motion";
+    } else if (securityType === "led_light") {
+      status = state === "on" || state === "active" ? "on" : "off";
+    } else if (securityType === "camera") {
+      status =
+        state === "recording" || state === "online" || state === "active"
+          ? "recording"
+          : "idle";
+    } else {
+      status = state; // Use the state directly for other types or refine as needed
     }
   }
+
   return {
     id: devicePayload.id,
     name: devicePayload.name || "Unknown Device",
@@ -55,7 +89,7 @@ const transformPayloadToSecurityPoint = (
     lastUpdated: devicePayload.last_updated
       ? new Date(devicePayload.last_updated).toISOString()
       : new Date().toISOString(),
-    icon: securityType,
+    icon: securityType === "motion" ? "device" : securityType,
   };
 };
 
