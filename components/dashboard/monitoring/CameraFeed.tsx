@@ -1,6 +1,6 @@
 "use client";
 
-import { getCameraStatusAction } from "@/app/actions/camera/actions";
+import { getCameraStatusAction } from "@/app/actions/dashboard/camera.action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,7 +69,7 @@ export function CameraFeed({ homeId }: CameraFeedProps) {
 
     async function setupWssAndSubscribe() {
       if (!isMounted) return;
-      setIsConnected(false); // Reset connection status
+      setIsConnected(false);
       try {
         const client = await connectWss();
 

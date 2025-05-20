@@ -1,12 +1,24 @@
 "use server";
 
-import { createEvent, fetchDeviceById, updateDeviceById } from "@/db/db";
+import {
+  createEvent,
+  fetchCameraByHomeId,
+  fetchDeviceById,
+  updateDeviceById,
+} from "@/db/db";
 import { Device, EventLog } from "@/db/schema";
 import { publishMessage } from "@/lib/utils/mqtt.util";
-import { revalidatePath } from "next/cache";
+import { unstable_noStore as noStore, revalidatePath } from "next/cache";
 
 interface CameraUpdatePayloadAction {
   currentState: "online" | "offline";
+}
+
+interface CameraStatusResult {
+  success: boolean;
+  data?: (Device & { status: string | null }) | null;
+  error?: string;
+  message?: string;
 }
 
 export async function updateCameraState(
@@ -87,5 +99,34 @@ export async function updateCameraState(
   } catch (error) {
     console.error("Error updating camera state:", error);
     return false;
+  }
+}
+
+export async function getCameraStatusAction(
+  homeId: string
+): Promise<CameraStatusResult> {
+  noStore();
+
+  if (!homeId) {
+    return { success: false, error: "Home ID is required." };
+  }
+
+  try {
+    const cameraDevice = await fetchCameraByHomeId(homeId);
+
+    if (!cameraDevice) {
+      return {
+        success: false,
+        message: "No camera device found for this home.",
+      };
+    }
+
+    return { success: true, data: cameraDevice };
+  } catch (error) {
+    console.error("[getCameraStatusAction] Error:", error);
+    return {
+      success: false,
+      error: "Failed to fetch camera status. Please try again.",
+    };
   }
 }
