@@ -4,7 +4,7 @@ interface DeviceUsageData {
   timestamp: string;
   away: number;
   movie: number;
-  learning: number;
+  home: number;
 }
 
 interface DeviceAnalyticsResult {
@@ -27,37 +27,37 @@ export function useDeviceAnalytics(): DeviceAnalyticsResult {
             timestamp: "00:00",
             away: 60,
             movie: 20,
-            learning: 20,
+            home: 20,
           },
           {
             timestamp: "04:00",
             away: 80,
             movie: 10,
-            learning: 10,
+            home: 10,
           },
           {
             timestamp: "08:00",
             away: 20,
             movie: 30,
-            learning: 50,
+            home: 50,
           },
           {
             timestamp: "12:00",
             away: 10,
             movie: 50,
-            learning: 40,
+            home: 40,
           },
           {
             timestamp: "16:00",
             away: 15,
             movie: 55,
-            learning: 30,
+            home: 30,
           },
           {
             timestamp: "20:00",
             away: 30,
             movie: 45,
-            learning: 25,
+            home: 25,
           },
         ];
 
