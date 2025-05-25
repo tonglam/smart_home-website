@@ -1,3 +1,7 @@
+/**
+ * Hook for managing smart home connections and user-home associations
+ * Handles connecting/disconnecting homes and maintaining connection state
+ */
 import { updateUserHomeId } from "@/app/actions/user/user.action";
 import { type UseHomeConnectionReturn } from "@/types/hook.types";
 import { useUser } from "@clerk/nextjs";
@@ -20,6 +24,10 @@ export function useHomeConnection({
   );
   const [isConnecting, setIsConnecting] = useState(false);
 
+  /**
+   * Revalidates the home connection by checking the user's metadata
+   * Updates local state if the connection has changed
+   */
   const revalidateConnection = useCallback(async () => {
     if (!user) return;
 
@@ -34,6 +42,7 @@ export function useHomeConnection({
     }
   }, [user, currentHomeId]);
 
+  // Revalidate connection on window focus
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -45,6 +54,7 @@ export function useHomeConnection({
     return () => window.removeEventListener("focus", onFocus);
   }, [revalidateConnection]);
 
+  // Revalidate connection when online
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -56,6 +66,7 @@ export function useHomeConnection({
     return () => window.removeEventListener("online", onOnline);
   }, [revalidateConnection]);
 
+  // Initialize home ID from user metadata
   useEffect(() => {
     if (isLoaded && user) {
       const homeId = user.publicMetadata.homeId as string;
@@ -65,12 +76,17 @@ export function useHomeConnection({
     }
   }, [isLoaded, user, currentHomeId]);
 
+  // Reset connecting state when dialog closes
   useEffect(() => {
     if (!open) {
       setIsConnecting(false);
     }
   }, [open]);
 
+  /**
+   * Connects a user to a home by updating their metadata
+   * Reloads the page to ensure fresh data after connection
+   */
   const handleConnect = async (homeId: string) => {
     if (!user) {
       return;
@@ -100,6 +116,10 @@ export function useHomeConnection({
     }
   };
 
+  /**
+   * Disconnects a user from their current home
+   * Reloads the page to ensure fresh data after disconnection
+   */
   const handleDisconnect = async () => {
     if (!user) {
       return;

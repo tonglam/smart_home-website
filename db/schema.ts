@@ -1,3 +1,7 @@
+/**
+ * Database schema definitions using Drizzle ORM
+ * Defines tables and relationships for the smart home system
+ */
 import {
   boolean,
   integer,
@@ -7,6 +11,10 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
+/**
+ * Smart home devices table
+ * Stores device information, state, and configuration
+ */
 export const devices = pgTable("devices", {
   id: text("id").primaryKey(),
   homeId: text("home_id").notNull(),
@@ -19,6 +27,10 @@ export const devices = pgTable("devices", {
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 
+/**
+ * User-Home associations table
+ * Links users to their homes and stores home-specific settings
+ */
 export const userHomes = pgTable("user_homes", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -28,6 +40,11 @@ export const userHomes = pgTable("user_homes", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+/**
+ * Event log table
+ * Records device state changes and system events
+ * References devices table for device-specific events
+ */
 export const eventLog = pgTable("event_log", {
   id: serial("id").primaryKey(),
   homeId: text("home_id").notNull(),
@@ -41,6 +58,11 @@ export const eventLog = pgTable("event_log", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+/**
+ * Alert log table
+ * Stores system alerts and notifications
+ * Can be linked to specific devices and users
+ */
 export const alertLog = pgTable("alert_log", {
   id: serial("id").primaryKey(),
   homeId: text("home_id").notNull(),
@@ -52,7 +74,7 @@ export const alertLog = pgTable("alert_log", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Inferred types
+/** Type definitions inferred from the schema */
 export type Device = typeof devices.$inferSelect;
 export type NewDevice = typeof devices.$inferInsert;
 

@@ -1,3 +1,7 @@
+/**
+ * Hook for managing smart home camera devices
+ * Handles camera state changes with optimistic updates and error handling
+ */
 "use client";
 
 import { updateCameraState } from "@/app/actions/dashboard/camera.action";
@@ -9,6 +13,10 @@ export function useCamera(homeId: string, initialCameras: Camera[] = []) {
   const [cameras, setCameras] = useState<Camera[]>(initialCameras);
   const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
 
+  /**
+   * Toggles a camera's online/offline state with optimistic updates
+   * Reverts changes on failure and manages pending state
+   */
   const toggleCamera = async (id: string) => {
     const camera = cameras.find((c) => c.id === id);
     if (!camera) {

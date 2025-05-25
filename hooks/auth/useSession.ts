@@ -1,3 +1,7 @@
+/**
+ * Session management hook that handles session timeouts and warnings
+ * Tracks user activity and manages session refresh flows
+ */
 "use client";
 
 import { SessionState } from "@/types/hook.types";
@@ -6,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./useAuth";
 
+/** Configuration constants for session management */
 const SESSION_WARNING_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 const CHECK_INTERVAL = 60 * 1000; // every minute
 
@@ -16,22 +21,25 @@ export function useSession(): SessionState {
   const [showWarning, setShowWarning] = useState(false);
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
+  // Determine if session is active based on time remaining
   const isActive = useMemo(() => {
     if (!isSignedIn || !timeLeft) return false;
     return timeLeft > 0;
   }, [isSignedIn, timeLeft]);
 
+  // Update last activity timestamp
   const updateLastActivity = useCallback(() => {
     setLastActivity(Date.now());
   }, []);
 
+  // Handle session refresh with error handling
   const handleRefreshSession = useCallback(async () => {
     try {
       await refreshSession();
       setShowWarning(false);
       updateLastActivity();
       toast.success("Session refreshed successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh session", {
         description: "Please try signing in again.",
       });
@@ -43,6 +51,7 @@ export function useSession(): SessionState {
     setShowWarning(false);
   }, []);
 
+  // Check session expiry and show warnings
   const checkSessionExpiry = useCallback(() => {
     if (!isSignedIn) return;
 
@@ -72,6 +81,7 @@ export function useSession(): SessionState {
     }
   }, [isSignedIn, lastActivity, showWarning, handleRefreshSession, router]);
 
+  // Set up activity tracking
   useEffect(() => {
     if (!isSignedIn) return;
 
@@ -87,6 +97,7 @@ export function useSession(): SessionState {
     };
   }, [isSignedIn, updateLastActivity]);
 
+  // Set up periodic session checks
   useEffect(() => {
     if (!isSignedIn) return;
 

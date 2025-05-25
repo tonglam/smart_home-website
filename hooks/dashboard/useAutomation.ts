@@ -1,3 +1,7 @@
+/**
+ * Hook for managing smart home automation modes
+ * Handles mode switching with optimistic updates and error handling
+ */
 "use client";
 
 import {
@@ -21,6 +25,10 @@ export function useAutomation({
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  /**
+   * Toggles between automation modes with optimistic updates
+   * Reverts to previous mode on failure
+   */
   const handleModeToggle = async (clickedMode: AutomationMode) => {
     if (isLoading) return;
     setIsLoading(true);
@@ -33,6 +41,7 @@ export function useAutomation({
         return;
       }
 
+      // Optimistic update
       setOptimisticCurrentMode(clickedMode.id);
 
       const success = await toggleAutomationMode(homeId, clickedMode.id);
@@ -44,6 +53,7 @@ export function useAutomation({
       toast.success(`Mode set to ${clickedMode.name}`);
     } catch (error) {
       console.error("(Hook) Error toggling mode catch block:", error);
+      // Revert optimistic update
       setOptimisticCurrentMode(originalMode);
       toast.error(
         `Failed to set mode to ${clickedMode.name}. Reverted change.`

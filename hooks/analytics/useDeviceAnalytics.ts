@@ -1,5 +1,10 @@
+/**
+ * Hook for fetching and managing device usage analytics data
+ * Currently uses mock data - TODO: Replace with actual API integration
+ */
 import { useEffect, useState } from "react";
 
+/** Device usage data structure for analytics */
 interface DeviceUsageData {
   timestamp: string;
   away: number;
@@ -18,6 +23,7 @@ export function useDeviceAnalytics(): DeviceAnalyticsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Fetch analytics data on mount
   useEffect(() => {
     async function fetchData() {
       try {

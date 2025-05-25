@@ -1,3 +1,7 @@
+/**
+ * Hook for managing email change form state and validation
+ * Handles form submission, validation, and error states
+ */
 import { emailChangeSchema, type EmailChangeFormData } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -17,6 +21,7 @@ export function useEmailChange(
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Initialize form with zod validation schema
   const form = useForm<EmailChangeFormData>({
     resolver: zodResolver(emailChangeSchema),
     defaultValues: {
@@ -24,6 +29,10 @@ export function useEmailChange(
     },
   });
 
+  /**
+   * Handles email change form submission
+   * Validates new email and prevents duplicate submissions
+   */
   const handleEmailChange = async (data: EmailChangeFormData) => {
     if (data.email === currentEmail) {
       form.setError("email", {

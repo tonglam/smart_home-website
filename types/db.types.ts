@@ -1,3 +1,8 @@
+/**
+ * Event type constants for the smart home system.
+ * These types are used to categorize and handle different events consistently
+ * throughout the application, from device state changes to security alerts.
+ */
 export const EventTypes = {
   STATE_CHANGE: "state_change",
   SECURITY_ALERT: "security_alert",

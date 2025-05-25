@@ -1,3 +1,7 @@
+/**
+ * Hook for managing smart home lighting devices
+ * Handles state changes, brightness control, and optimistic updates
+ */
 "use client";
 
 import { updateLightState } from "@/app/actions/dashboard/lighting.action";
@@ -5,6 +9,10 @@ import type { Light } from "@/types";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+/**
+ * Helper function to remove a device from pending updates after a delay
+ * Used to prevent rapid state changes and provide visual feedback
+ */
 const removePendingUpdateWithDelay = (
   setPendingUpdates: React.Dispatch<React.SetStateAction<Set<string>>>,
   id: string,
@@ -23,6 +31,10 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
   const [lights, setLights] = useState<Light[]>(initialLights);
   const [pendingUpdates, setPendingUpdates] = useState<Set<string>>(new Set());
 
+  /**
+   * Toggles a light's on/off state with optimistic updates
+   * Reverts changes on failure and manages pending state
+   */
   const toggleLight = async (id: string) => {
     const light = lights.find((l) => l.id === id);
     if (!light) {
@@ -37,6 +49,7 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
     try {
       setPendingUpdates((prev) => new Set(prev).add(id));
 
+      // Optimistic update
       setLights(lights.map((l) => (l.id === id ? { ...l, isOn: !l.isOn } : l)));
 
       const success = await updateLightState(id, homeId, {
@@ -44,6 +57,7 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
       });
 
       if (!success) {
+        // Revert optimistic update
         setLights(
           lights.map((l) => (l.id === id ? { ...l, isOn: light.isOn } : l))
         );
@@ -56,10 +70,10 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
         });
       } else {
         toast.success(`${light.name} toggled successfully.`);
-
         removePendingUpdateWithDelay(setPendingUpdates, id);
       }
     } catch (error) {
+      // Revert optimistic update on error
       setLights(
         lights.map((l) => (l.id === id ? { ...l, isOn: light.isOn } : l))
       );
@@ -74,6 +88,10 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
     }
   };
 
+  /**
+   * Adjusts a light's brightness with optimistic updates
+   * Handles both brightness and on/off state changes
+   */
   const adjustBrightness = useCallback(
     async (id: string, value: number) => {
       const light = lights.find((l) => l.id === id);
@@ -95,6 +113,7 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
       try {
         setPendingUpdates((prev) => new Set(prev).add(id));
 
+        // Optimistic update
         setLights(
           lights.map((l) =>
             l.id === id ? { ...l, brightness: newBrightness, isOn: newIsOn } : l
@@ -109,6 +128,7 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
         });
 
         if (!success) {
+          // Revert optimistic update
           setLights(
             lights.map((l) =>
               l.id === id
@@ -125,10 +145,10 @@ export function useLighting(homeId: string, initialLights: Light[] = []) {
           });
         } else {
           toast.success(`Brightness updated for ${light.name}`);
-
           removePendingUpdateWithDelay(setPendingUpdates, id);
         }
       } catch (error) {
+        // Revert optimistic update on error
         setLights(
           lights.map((l) =>
             l.id === id

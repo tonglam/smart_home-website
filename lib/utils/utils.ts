@@ -2,6 +2,14 @@ import { Activity } from "@/types/dashboard.types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * General utility functions used across the application
+ */
+
+/**
+ * Combines Tailwind CSS classes with proper precedence handling
+ * Uses clsx for conditional classes and tailwind-merge for deduplication
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

@@ -1,3 +1,11 @@
+/**
+ * Date formatting and manipulation utilities for consistent time display across the app
+ */
+
+/**
+ * Converts a date to a human-readable relative time string (e.g., "2 hours ago")
+ * Falls back to full date format for older dates
+ */
 export function formatRelativeTime(date: string | Date): string {
   const now = new Date();
   const targetDate = typeof date === "string" ? new Date(date) : date;
@@ -78,6 +86,9 @@ export function formatTimeAgo(timestamp: string): {
   }
 }
 
+/**
+ * Returns a localized greeting based on the current time of day
+ */
 export function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";

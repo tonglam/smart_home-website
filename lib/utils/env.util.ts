@@ -1,3 +1,7 @@
+/**
+ * Environment variable validation and configuration utilities
+ */
+
 const requiredEnvVars = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
@@ -8,6 +12,10 @@ const requiredEnvVars = [
 
 type EnvVar = (typeof requiredEnvVars)[number];
 
+/**
+ * Safely retrieves and validates required environment variables
+ * @throws Error if the environment variable is not set
+ */
 function getEnvVar(name: EnvVar): string {
   const value = process.env[name];
   if (!value) {
@@ -24,10 +32,16 @@ function validateEnv() {
 
 validateEnv();
 
+/**
+ * API configuration derived from environment variables
+ */
 export const apiConfig = {
   url: getEnvVar("NEXT_PUBLIC_API_URL"),
 } as const;
 
+/**
+ * Supabase configuration derived from environment variables
+ */
 export const supabaseConfig = {
   url: getEnvVar("NEXT_PUBLIC_SUPABASE_URL"),
   anonKey: getEnvVar("NEXT_PUBLIC_SUPABASE_ANON_KEY"),

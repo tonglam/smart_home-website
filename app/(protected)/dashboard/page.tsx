@@ -1,3 +1,7 @@
+/**
+ * Protected dashboard page that displays smart home monitoring and control interface.
+ * Handles user authentication and data fetching for the dashboard.
+ */
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import {
   fetchData,
@@ -9,6 +13,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+// Page metadata for SEO and social sharing
 export const metadata: Metadata = {
   title: "Dashboard - Smart Home System",
   description: "Monitor and control your smart home devices",
@@ -30,6 +35,7 @@ export default async function DashboardPage(props: {
   const searchParams = await props.searchParams;
   const user = await currentUser();
 
+  // Redirect to sign in if no authenticated user
   if (!user) {
     redirect("/signin");
   }
@@ -39,6 +45,7 @@ export default async function DashboardPage(props: {
     user.firstName || user.emailAddresses[0]?.emailAddress || "there";
 
   try {
+    // Return default dashboard if no home is associated
     if (!homeId) {
       return (
         <Dashboard
@@ -48,6 +55,7 @@ export default async function DashboardPage(props: {
       );
     }
 
+    // Fetch and transform dashboard data for the user's home
     const rawData = await fetchData(homeId);
     const dashboardData = await transformData(
       rawData,
@@ -59,6 +67,7 @@ export default async function DashboardPage(props: {
     return <Dashboard data={dashboardData} searchParams={searchParams} />;
   } catch (error) {
     console.error("Error in DashboardPage:", error);
+    // Fallback to default dashboard on error
     return (
       <Dashboard
         data={getDefaultDashboardData(userDisplayName)}

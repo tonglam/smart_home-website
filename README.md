@@ -48,13 +48,84 @@ cd smart_home-website
 npm install
 ```
 
-3. Create `.env` file from `.env.example`
+3. Set up environment variables:
+
+Create a `.env` file in the root directory by copying `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Configure the following required environment variables:
+
+**Authentication (Clerk.js)**
+
+- Create a [Clerk.js account](https://clerk.com)
+- Create a new application in the Clerk Dashboard
+- Navigate to API Keys section
+- Copy the `CLERK_SECRET_KEY` and add it to `.env`
+
+**Database (Supabase)**
+
+- Sign up for [Supabase](https://supabase.com)
+- Create a new project
+- Go to Project Settings → API
+- Copy the `Project URL` as `SUPABASE_URL`
+- Copy the `anon` public key as `SUPABASE_ANON_KEY`
+- Copy the `service_role` secret key as `SUPABASE_SERVICE_ROLE_KEY`
+
+**MQTT Broker (HiveMQ)**
+
+- Create an account on [HiveMQ Cloud](https://www.hivemq.com/cloud/)
+- Create a new cluster (free tier available)
+- Navigate to Access Management → Credentials
+- Set up the following in your `.env`:
+  - `MQTT_BROKER_URL`: Your cluster URL (e.g., xxxxx.s2.eu.hivemq.cloud)
+  - `MQTT_USERNAME`: Generated username
+  - `MQTT_PASSWORD`: Generated password
+  - `MQTT_CLIENT_ID`: A unique identifier for your application
+
+**Email Service (Resend)**
+
+- Sign up for [Resend](https://resend.com)
+- Create an API key
+- Add `RESEND_API_KEY` to your `.env`
+
+Your final `.env` file should look like this (replace with your actual values):
+
+```bash
+# Auth
+CLERK_SECRET_KEY=sk_test_xxxxxx
+
+# Database
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=eyJxxxxxx
+SUPABASE_SERVICE_ROLE_KEY=eyJxxxxxx
+
+# MQTT
+MQTT_BROKER_URL=xxxxx.s2.eu.hivemq.cloud
+MQTT_USERNAME=your-username
+MQTT_PASSWORD=your-password
+MQTT_CLIENT_ID=smart-home-app-dev
+
+# Email
+RESEND_API_KEY=re_xxxxxx
+
+# App Config
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
 4. Start development server:
 
 ```bash
+# Kill any existing process on port 3000 if needed
+lsof -ti:3000 | xargs kill -9 2>/dev/null || true
+
+# Start the development server
 npm run dev
 ```
+
+The application should now be running at [http://localhost:3000](http://localhost:3000)
 
 ## 🏗 Architecture
 

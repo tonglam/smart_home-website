@@ -1,3 +1,7 @@
+/**
+ * Dashboard data fetching and transformation utilities.
+ * Handles fetching raw data and transforming it into dashboard-ready format.
+ */
 import {
   db,
   fetchAlertsByHomeId,
@@ -23,12 +27,16 @@ import type {
 } from "@/types/dashboard.types";
 import { and, eq } from "drizzle-orm";
 
+/** Raw data structure from database queries */
 interface RawData {
   devices: Device[];
   events: EventLog[];
   alerts: AlertLog[];
 }
 
+/**
+ * Fetches all required dashboard data for a home in parallel
+ */
 export const fetchData = async (homeId: string): Promise<RawData> => {
   try {
     const devicesPromise = fetchDevicesByHomeId(homeId);
@@ -51,6 +59,9 @@ export const fetchData = async (homeId: string): Promise<RawData> => {
   }
 };
 
+/**
+ * Transform functions for converting raw device data into UI-ready formats
+ */
 const transformToLight = (device: Device): Light => {
   return {
     id: device.id,
@@ -72,6 +83,9 @@ const transformToCamera = (device: Device): Camera => {
   };
 };
 
+/**
+ * Maps device type strings to security point types
+ */
 const getSecurityPointType = (
   deviceType: string
 ):
@@ -93,6 +107,9 @@ const getSecurityPointType = (
   return null;
 };
 
+/**
+ * Transforms raw device data into security point format with status handling
+ */
 const transformToSecurityPoint = (
   device: Device,
   pointType:
@@ -118,6 +135,9 @@ const transformToSecurityPoint = (
   };
 };
 
+/**
+ * Transforms alert logs into UI-friendly format with device name mapping
+ */
 const transformToAlert = (
   alert: AlertLog,
   deviceNameMap: Record<string, string>
@@ -132,6 +152,9 @@ const transformToAlert = (
   };
 };
 
+/**
+ * Transforms event logs into activity items with relative timestamps
+ */
 const transformToActivity = (
   event: EventLog,
   deviceNameMap: Record<string, string>
@@ -161,6 +184,9 @@ const transformToActivity = (
   };
 };
 
+/**
+ * Main transformation function that converts all raw data into dashboard format
+ */
 export const transformData = async (
   rawData: RawData,
   homeId: string,
@@ -231,6 +257,9 @@ export const transformData = async (
   return transformedData;
 };
 
+/**
+ * Returns empty dashboard data structure for new users or error cases
+ */
 export const getDefaultDashboardData = (
   userDisplayName: string
 ): DashboardData => ({
@@ -245,6 +274,9 @@ export const getDefaultDashboardData = (
   userDisplayName,
 });
 
+/**
+ * Utility functions for fetching specific device types
+ */
 export async function getLightDevices(homeId: string): Promise<Device[]> {
   try {
     const result = await db
@@ -261,6 +293,9 @@ export async function getLightDevices(homeId: string): Promise<Device[]> {
   }
 }
 
+/**
+ * Fetches lighting data for a home
+ */
 export async function getLightingData(homeId: string) {
   try {
     const lightDevicesData = await getLightDevices(homeId);

@@ -1,3 +1,7 @@
+/**
+ * Chart component wrapper around Recharts library
+ * Provides theme-aware styling and consistent configuration
+ */
 "use client";
 
 import * as React from "react";
@@ -5,9 +9,13 @@ import * as RechartsPrimitive from "recharts";
 
 import { cn } from "@/lib/utils/utils";
 
-// Format: { THEME_NAME: CSS_SELECTOR }
+/** Theme configuration for light/dark mode support */
 const THEMES = { light: "", dark: ".dark" } as const;
 
+/**
+ * Chart configuration type for consistent styling and labeling
+ * Supports both direct color values and theme-aware color configurations
+ */
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode;
